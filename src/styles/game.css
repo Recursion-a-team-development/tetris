@@ -1,47 +1,43 @@
 /* 全体をビュー高さ100%に設定 */
 .full-height {
-    height: 100vh;
+  height: 100vh;
 }
 
 /* フレックスボックスで中央寄せ */
 .center-flex {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 /* ゲーム画面のスタイル */
 #game-ground {
-    text-align: center;
-    padding: 1rem 1rem 1rem 1rem; /* px-4 pt-4 */
+  text-align: center;
+  padding: 1rem 1rem 1rem 1rem; /* px-4 pt-4 */
 }
 
 /* スコアウィンドウのスタイル */
 #score-window {
-    padding: 1rem;
-    margin-top: 2rem; /* mt-5 */
-    border: 1px solid #007bff; /* border-primary */
-    background-image: radial-gradient(ellipse, #ff7e5f, #feb47b);
-    border-style: groove;
-    border-radius: 0.5em;
-    height:20%;  
+  padding: 1rem;
+  margin-top: 2rem; /* mt-5 */
+  border: 1px solid #007bff; /* border-primary */
+  background-image: radial-gradient(ellipse, #ff7e5f, #feb47b);
+  border-style: groove;
+  border-radius: 0.5em;
+  height: 20%;
 }
 
 /* ボタンのスタイル */
 #backToTopButton {
-    padding: 0.5rem 1rem; /* m-2 p-1 */
-    text-align: center;
-    cursor: pointer;
+  padding: 0.5rem 1rem; /* m-2 p-1 */
+  text-align: center;
+  cursor: pointer;
 }
 
 /* キャンバスのスタイル */
-#tetris-board {
-    margin-top: 1rem; /* mt-1 */
-}
-
 canvas {
-    background-color: rgba(89, 202, 212, 0.151);
-    border: 4px solid black;
-    border-style:ridge;
-    margin: 0 auto;
+  background-color: rgba(89, 202, 212, 0.151);
+  border: 4px solid black;
+  border-style: ridge;
+  margin-top: 1rem; /* mt-1 */
 }
