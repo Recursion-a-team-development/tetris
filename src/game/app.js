@@ -41,14 +41,14 @@ export class TetrisGame {
           [0, 1, 1],
         ],
         color: "green",
-      }, // S型
+      }, // Z型
       {
         shape: [
           [0, 1, 1],
           [1, 1, 0],
         ],
         color: "purple",
-      }, // Z型
+      }, // S型
       {
         shape: [
           [1, 0, 0],
