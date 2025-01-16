@@ -21,6 +21,10 @@
     padding: 1rem;
     margin-top: 2rem; /* mt-5 */
     border: 1px solid #007bff; /* border-primary */
+    background-image: radial-gradient(ellipse, #ff7e5f, #feb47b);
+    border-style: groove;
+    border-radius: 0.5em;
+    height:20%;  
 }
 
 /* ボタンのスタイル */
@@ -35,15 +39,7 @@
     margin-top: 1rem; /* mt-1 */
 }
 
-#score-window{
-    background-image: radial-gradient(ellipse, #ff7e5f, #feb47b);
-    border-style: groove;
-    border-radius: 0.5em;
-    height:20%;
-    
-}
-
-canvas{
+canvas {
     background-color: rgba(89, 202, 212, 0.151);
     border: 4px solid black;
     border-style:ridge;
