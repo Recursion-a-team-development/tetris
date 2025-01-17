@@ -1,0 +1,235 @@
+/**
+ * ゲーム設定 クラス外で定義。
+ */
+export const GAME_SETTINGS = {
+  START_X_POSITION: 3,
+  START_Y_POSITION: 0,
+  INITIAL_FALL_INTERVAL: 800,
+  BOARD_COLUMNS: 10,
+  BOARD_ROWS: 20,
+  BLOCK_SIZE: 30,
+};
+
+/**
+ * テトリスゲームを管理するクラス
+ */
+export class TetrisGame {
+  /**
+   * コンストラクタ - テトリスゲームの初期設定を行います
+   *
+   * @param {string} canvasId - ゲームボードのキャンバス要素のID
+   */
+  constructor(canvasId) {
+    this.canvas = document.getElementById(canvasId);
+    this.ctx = this.canvas.getContext("2d");
+    this.board = Array.from({ length: GAME_SETTINGS.BOARD_ROWS }, () =>
+      Array(GAME_SETTINGS.BOARD_COLUMNS).fill(null)
+    );
+
+    this.tetrominoes = [
+      { shape: [[1, 1, 1, 1]], color: "red" }, // I型
+      {
+        shape: [
+          [1, 1],
+          [1, 1],
+        ],
+        color: "blue",
+      }, // O型
+      {
+        shape: [
+          [1, 1, 0],
+          [0, 1, 1],
+        ],
+        color: "green",
+      }, // Z型
+      {
+        shape: [
+          [0, 1, 1],
+          [1, 1, 0],
+        ],
+        color: "purple",
+      }, // S型
+      {
+        shape: [
+          [1, 0, 0],
+          [1, 1, 1],
+        ],
+        color: "yellow",
+      }, // L型
+      {
+        shape: [
+          [0, 0, 1],
+          [1, 1, 1],
+        ],
+        color: "orange",
+      }, // J型
+      {
+        shape: [
+          [0, 1, 0],
+          [1, 1, 1],
+        ],
+        color: "cyan",
+      }, // T型
+    ];
+
+    this.currentTetromino = this.generateTetromino();
+    this.lastFallTime = 0;
+
+    // ゲームボードの初期位置設定 GAME_SETTINGSを直接変更することを防ぐために、クラスプロパティとしてxPositionとyPositionを使用。
+    this.xPosition = GAME_SETTINGS.START_X_POSITION;
+    this.yPosition = GAME_SETTINGS.START_Y_POSITION;
+  }
+
+  /**
+   * ゲームの開始処理
+   *
+   * @returns {void}
+   */
+  startGame() {
+    this.gameLoop();
+  }
+
+  /**
+   * ゲームループ - 定期的に呼ばれてゲームの状態を更新します
+   *
+   * @param {number} timestamp - 現在のタイムスタンプ（`requestAnimationFrame`から提供される、自動的に提供されるため手動で渡す必要はありません。）
+   * @returns {void}
+   */
+  gameLoop(timestamp) {
+    if (timestamp - this.lastFallTime >= GAME_SETTINGS.INITIAL_FALL_INTERVAL) {
+      this.lastFallTime = timestamp;
+      this.moveTetrominoDown();
+    }
+
+    this.drawBoard();
+    this.drawTetromino();
+    requestAnimationFrame(this.gameLoop.bind(this)); // コンテキストを維持
+  }
+
+  /**
+   * ボードを描画する
+   *
+   * @returns {void}
+   */
+  drawBoard() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // ボードをクリア
+    // ボードに固定されたブロックを描画
+    for (let row = 0; row < GAME_SETTINGS.BOARD_ROWS; row++) {
+      for (let col = 0; col < GAME_SETTINGS.BOARD_COLUMNS; col++) {
+        if (this.board[row][col] !== null) {
+          this.ctx.fillStyle = this.board[row][col];
+          this.ctx.fillRect(
+            col * GAME_SETTINGS.BLOCK_SIZE,
+            row * GAME_SETTINGS.BLOCK_SIZE,
+            GAME_SETTINGS.BLOCK_SIZE,
+            GAME_SETTINGS.BLOCK_SIZE
+          );
+          this.ctx.strokeRect(
+            col * GAME_SETTINGS.BLOCK_SIZE,
+            row * GAME_SETTINGS.BLOCK_SIZE,
+            GAME_SETTINGS.BLOCK_SIZE,
+            GAME_SETTINGS.BLOCK_SIZE
+          ); // 境界線
+        }
+      }
+    }
+
+    this.ctx.lineWidth = 1;
+    this.ctx.strokeStyle = "gray"; // グリッド線の色
+    // ボードのグリッドを描画
+    for (let row = 0; row < GAME_SETTINGS.BOARD_ROWS; row++) {
+      for (let col = 0; col < GAME_SETTINGS.BOARD_COLUMNS; col++) {
+        this.ctx.strokeRect(
+          col * GAME_SETTINGS.BLOCK_SIZE,
+          row * GAME_SETTINGS.BLOCK_SIZE,
+          GAME_SETTINGS.BLOCK_SIZE,
+          GAME_SETTINGS.BLOCK_SIZE
+        );
+      }
+    }
+  }
+
+  /**
+   * テトリスブロックを描画する
+   *
+   * @returns {void}
+   */
+  drawTetromino() {
+    this.ctx.fillStyle = this.currentTetromino.color;
+
+    for (let row = 0; row < this.currentTetromino.shape.length; row++) {
+      for (let col = 0; col < this.currentTetromino.shape[row].length; col++) {
+        if (this.currentTetromino.shape[row][col]) {
+          this.ctx.fillRect(
+            (this.xPosition + col) * GAME_SETTINGS.BLOCK_SIZE,
+            (this.yPosition + row) * GAME_SETTINGS.BLOCK_SIZE,
+            GAME_SETTINGS.BLOCK_SIZE,
+            GAME_SETTINGS.BLOCK_SIZE
+          );
+        }
+      }
+    }
+  }
+
+  /**
+   * 新しいテトリスブロックをランダムに生成する
+   *
+   * @returns {Object} - 生成されたテトリスブロックの形状と色
+   */
+  generateTetromino() {
+    const randomIndex = Math.floor(Math.random() * this.tetrominoes.length);
+    return this.tetrominoes[randomIndex];
+  }
+
+  /**
+   * テトリスブロックを1行下に移動させる
+   *
+   * @returns {void}
+   */
+  moveTetrominoDown() {
+    this.yPosition++;
+    if (this.isTetrominoAtBottom()) {
+      this.freezeTetromino();
+      this.currentTetromino = this.generateTetromino();
+      this.xPosition = GAME_SETTINGS.START_X_POSITION;
+      this.yPosition = GAME_SETTINGS.START_Y_POSITION;
+    }
+  }
+
+  /**
+   * テトリスブロックが底に到達したかどうかを判定する
+   *
+   * @returns {boolean} - ブロックが底に到達した場合は`true`、そうでない場合は`false`
+   */
+  isTetrominoAtBottom() {
+    for (let row = 0; row < this.currentTetromino.shape.length; row++) {
+      for (let col = 0; col < this.currentTetromino.shape[row].length; col++) {
+        if (this.currentTetromino.shape[row][col]) {
+          if (
+            this.yPosition + row >= GAME_SETTINGS.BOARD_ROWS - 1 ||
+            this.board[this.yPosition + row + 1][this.xPosition + col]
+          ) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * 現在のテトリスブロックをボードに固定する
+   *
+   * @returns {void}
+   */
+  freezeTetromino() {
+    for (let row = 0; row < this.currentTetromino.shape.length; row++) {
+      for (let col = 0; col < this.currentTetromino.shape[row].length; col++) {
+        if (this.currentTetromino.shape[row][col]) {
+          this.board[this.yPosition + row][this.xPosition + col] =
+            this.currentTetromino.color;
+        }
+      }
+    }
+  }
+}
