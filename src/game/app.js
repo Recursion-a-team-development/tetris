@@ -222,6 +222,14 @@ export class TetrisGame {
   moveTetrominoLeft() {
     if (!this.isTetrominoAtSides("left")) {
       this.xPosition--;
+
+      // 移動後にブロックが底に到達した場合、ブロックを固定して新しいブロックを生成
+      if (this.isTetrominoAtBottom()) {
+        this.freezeTetromino();
+        this.currentTetromino = this.generateTetromino();
+        this.xPosition = GAME_SETTINGS.START_X_POSITION;
+        this.yPosition = GAME_SETTINGS.START_Y_POSITION;
+      }
     }
   }
 
@@ -232,6 +240,14 @@ export class TetrisGame {
   moveTetrominoRight() {
     if (!this.isTetrominoAtSides("right")) {
       this.xPosition++;
+
+      // 移動後にブロックが底に到達した場合、ブロックを固定して新しいブロックを生成
+      if (this.isTetrominoAtBottom()) {
+        this.freezeTetromino();
+        this.currentTetromino = this.generateTetromino();
+        this.xPosition = GAME_SETTINGS.START_X_POSITION;
+        this.yPosition = GAME_SETTINGS.START_Y_POSITION;
+      }
     }
   }
 
