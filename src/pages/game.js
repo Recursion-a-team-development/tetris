@@ -13,7 +13,7 @@ export function renderGamePage() {
     <div class="full-height center-flex">
       <div id="game-ground">
         <div id="score-window">
-          <h2>スコアウィンドウ</h2>
+          <h2>0</h2>
         </div>
         <div class="m-2 text-center p-1">
           <button id="backToTopButton">TOP画面へ</button>
@@ -29,6 +29,6 @@ export function renderGamePage() {
   });
 
   // ゲームの初期化
-  const game = new TetrisGame("tetris-board");
+  const game = new TetrisGame("tetris-board", "score-window");
   game.startGame();
 }

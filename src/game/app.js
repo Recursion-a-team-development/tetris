@@ -5,9 +5,14 @@ export const GAME_SETTINGS = {
   START_X_POSITION: 3,
   START_Y_POSITION: 0,
   INITIAL_FALL_INTERVAL: 800,
+  INITIAL_SCORE: 0,
   BOARD_COLUMNS: 10,
   BOARD_ROWS: 20,
   BLOCK_SIZE: 30,
+  ARROW_LEFT: "ArrowLeft",
+  ARROW_RIGHT: "ArrowRight",
+  DIRECRION_LEFT: "left",
+  DIRECTION_RIGHT: "right",
 };
 
 /**
@@ -18,10 +23,12 @@ export class TetrisGame {
    * コンストラクタ - テトリスゲームの初期設定を行います
    *
    * @param {string} canvasId - ゲームボードのキャンバス要素のID
+   * @param {string} scoreWindowId - スコアウィンドウのID
    */
-  constructor(canvasId) {
+  constructor(canvasId, scoreWindowId) {
     this.canvas = document.getElementById(canvasId);
     this.ctx = this.canvas.getContext("2d");
+    this.scoreWindow = document.getElementById(scoreWindowId);
     this.board = Array.from({ length: GAME_SETTINGS.BOARD_ROWS }, () =>
       Array(GAME_SETTINGS.BOARD_COLUMNS).fill(null)
     );
@@ -78,6 +85,19 @@ export class TetrisGame {
     // ゲームボードの初期位置設定 GAME_SETTINGSを直接変更することを防ぐために、クラスプロパティとしてxPositionとyPositionを使用。
     this.xPosition = GAME_SETTINGS.START_X_POSITION;
     this.yPosition = GAME_SETTINGS.START_Y_POSITION;
+
+    // キーボードイベントのリスナーを追加
+    document.addEventListener("keydown", (event) =>
+      this.controlTetromino(event)
+    );
+
+    // キーボードの矢印キー
+    this.arrowLeft = GAME_SETTINGS.ARROW_LEFT;
+    this.arrowRight = GAME_SETTINGS.ARROW_RIGHT;
+
+    // テトリスブロックの移動方向
+    this.directionLeft = GAME_SETTINGS.DIRECRION_LEFT;
+    this.directionRight = GAME_SETTINGS.DIRECTION_RIGHT;
   }
 
   /**
@@ -101,6 +121,7 @@ export class TetrisGame {
       this.moveTetrominoDown();
     }
 
+    this.clearAndUpdateScore();
     this.drawBoard();
     this.drawTetromino();
     requestAnimationFrame(this.gameLoop.bind(this)); // コンテキストを維持
@@ -189,11 +210,59 @@ export class TetrisGame {
   moveTetrominoDown() {
     this.yPosition++;
     if (this.isTetrominoAtBottom()) {
-      this.freezeTetromino();
-      this.currentTetromino = this.generateTetromino();
-      this.xPosition = GAME_SETTINGS.START_X_POSITION;
-      this.yPosition = GAME_SETTINGS.START_Y_POSITION;
+      this.freezeAndGenerateTetromino();
     }
+  }
+
+  /**
+   * テトリスブロックを左右に移動させる
+   *
+   * @param {KeyboardEvent} event - キーボードイベント
+   * @returns {void}
+   */
+  controlTetromino(event) {
+    if (event.key === this.arrowLeft) {
+      if (!this.isTetrominoAtSides(this.directionLeft)) {
+        this.xPosition--;
+      }
+    } else if (event.key === this.arrowRight) {
+      if (!this.isTetrominoAtSides(this.directionRight)) {
+        this.xPosition++;
+      }
+    }
+    // 移動後のブロックが底に到達した場合は固定して新しいブロックを生成
+    if (this.isTetrominoAtBottom()) {
+      this.freezeAndGenerateTetromino();
+    }
+  }
+
+  /**
+   * テトリスブロックが左右に移動できるかどうかを判定する
+   * @param {string} direction - 移動方向 ('left' または 'right')
+   * @returns {boolean} - 移動できない場合は`true`、移動できる場合は`false`
+   */
+  isTetrominoAtSides(direction) {
+    for (let row = 0; row < this.currentTetromino.shape.length; row++) {
+      for (let col = 0; col < this.currentTetromino.shape[row].length; col++) {
+        if (this.currentTetromino.shape[row][col]) {
+          // 移動後のx位置を計算
+          const newXPosition =
+            direction === this.directionLeft
+              ? this.xPosition + col - 1
+              : this.xPosition + col + 1;
+          // 左右に壁があるかを判定
+          if (newXPosition < 0 || newXPosition >= GAME_SETTINGS.BOARD_COLUMNS) {
+            return true;
+          }
+
+          // 左右にミノがあるかを判定
+          if (this.board[this.yPosition + row][newXPosition]) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
   }
 
   /**
@@ -231,5 +300,75 @@ export class TetrisGame {
         }
       }
     }
+  }
+
+  /**
+   * テトリスブロックの固定＆新しいテトリスブロックの生成をまとめて処理する
+   * @returns {void}
+   */
+  freezeAndGenerateTetromino() {
+    this.freezeTetromino();
+    this.currentTetromino = this.generateTetromino();
+    this.xPosition = GAME_SETTINGS.START_X_POSITION;
+    this.yPosition = GAME_SETTINGS.START_Y_POSITION;
+  }
+
+  /**
+   * テトリスブロックが一列揃ったらクリアする
+   * クリアされた行はボードの一番上に新しい行として追加される
+   * クリアした行数に応じてスコアを加算し、スコアウィンドのhtmlに反映
+   *
+   * @returns {void}
+   */
+  clearAndUpdateScore() {
+    let rowsToDelete = []; // クリアされる行のインデックスを格納する配列
+
+    // ボードの各行をすべてチェックする。
+    for (let row = 0; row < GAME_SETTINGS.BOARD_ROWS; row++) {
+      if (this.board[row].every((cell) => cell != null)) {
+        rowsToDelete.push(row);
+      }
+    }
+
+    // クリアされる行を削除し、新しく空の行を追加。
+    rowsToDelete.forEach((row) => {
+      this.board.splice(row, 1); // クリアすべき行を1行削除。
+      this.board.unshift(Array(GAME_SETTINGS.BOARD_COLUMNS).fill(null));
+    });
+
+    if (rowsToDelete.length > 0) {
+      this.updateScore(rowsToDelete.length);
+    }
+  }
+
+  /**
+   * クリアした行数に応じてスコアをつけていく
+   * スコアウィンドウのhtmlに反映
+   *
+   * @param {number} lines - 一度にクリアされた行数
+   * @returns {void}
+   */
+  updateScore(lines) {
+    this.score = GAME_SETTINGS.INITIAL_SCORE;
+    switch (lines) {
+      case 1:
+        this.score += 100;
+        break;
+      case 2:
+        this.score += 200;
+        break;
+      case 3:
+        this.score += 400;
+        break;
+      case 4:
+        this.score += 800;
+        break;
+      default:
+        this.score += 0;
+        break;
+    }
+    this.scoreWindow.innerHTML = `
+      <h2>${this.score}</h2>
+    `;
   }
 }
