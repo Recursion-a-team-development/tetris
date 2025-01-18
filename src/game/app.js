@@ -82,6 +82,9 @@ export class TetrisGame {
     this.currentTetromino = this.generateTetromino();
     this.lastFallTime = 0;
 
+    // ゲームスコアの初期化
+    this.score = GAME_SETTINGS.INITIAL_SCORE;
+
     // ゲームボードの初期位置設定 GAME_SETTINGSを直接変更することを防ぐために、クラスプロパティとしてxPositionとyPositionを使用。
     this.xPosition = GAME_SETTINGS.START_X_POSITION;
     this.yPosition = GAME_SETTINGS.START_Y_POSITION;
@@ -349,7 +352,6 @@ export class TetrisGame {
    * @returns {void}
    */
   updateScore(lines) {
-    this.score = GAME_SETTINGS.INITIAL_SCORE;
     switch (lines) {
       case 1:
         this.score += 100;
