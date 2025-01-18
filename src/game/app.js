@@ -10,7 +10,7 @@ export const GAME_SETTINGS = {
   BLOCK_SIZE: 30,
   ARROW_LEFT: "ArrowLeft",
   ARROW_RIGHT: "ArrowRight",
-  DIERCTION_LEFT: "left",
+  DIRECTION_LEFT: "left",
   DIRECTION_RIGHT: "right",
 };
 
@@ -93,7 +93,7 @@ export class TetrisGame {
     this.arrowRight = GAME_SETTINGS.ARROW_RIGHT;
 
     // テトリスブロックの移動方向
-    this.directionLeft = GAME_SETTINGS.DIERCTION_LEFT;
+    this.directionLeft = GAME_SETTINGS.DIRECTION_LEFT;
     this.directionRight = GAME_SETTINGS.DIRECTION_RIGHT;
   }
 
