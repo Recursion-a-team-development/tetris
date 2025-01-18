@@ -218,35 +218,17 @@ export class TetrisGame {
    */
   controlTetromino(event) {
     if (event.key === this.arrowLeft) {
-      this.moveTetrominoLeft();
+      if (!this.isTetrominoAtSides(this.directionLeft)) {
+        this.xPosition--;
+      }
     } else if (event.key === this.arrowRight) {
-      this.moveTetrominoRight();
-    }
-  }
-
-  /**
-   * テトリスブロックを左に移動させる
-   * @returns {void}
-   */
-  moveTetrominoLeft() {
-    if (!this.isTetrominoAtSides(this.directionLeft)) {
-      this.xPosition--;
-      if (this.isTetrominoAtBottom()) {
-        this.freezeAndGenerateTetromino();
+      if (!this.isTetrominoAtSides(this.directionRight)) {
+        this.xPosition++;
       }
     }
-  }
-
-  /**
-   * テトリスブロックを右に移動させる
-   * @returns {void}
-   */
-  moveTetrominoRight() {
-    if (!this.isTetrominoAtSides(this.directionRight)) {
-      this.xPosition++;
-      if (this.isTetrominoAtBottom()) {
-        this.freezeAndGenerateTetromino();
-      }
+    // 移動後のブロックが底に到達した場合は固定して新しいブロックを生成
+    if (this.isTetrominoAtBottom()) {
+      this.freezeAndGenerateTetromino();
     }
   }
 
