@@ -5,6 +5,7 @@ export const GAME_SETTINGS = {
   START_X_POSITION: 3,
   START_Y_POSITION: 0,
   INITIAL_FALL_INTERVAL: 800,
+  INITIAL_SCORE: 0,
   BOARD_COLUMNS: 10,
   BOARD_ROWS: 20,
   BLOCK_SIZE: 30,
@@ -22,10 +23,12 @@ export class TetrisGame {
    * コンストラクタ - テトリスゲームの初期設定を行います
    *
    * @param {string} canvasId - ゲームボードのキャンバス要素のID
+   * @param {string} scoreWindowId - スコアウィンドウのID
    */
-  constructor(canvasId) {
+  constructor(canvasId, scoreWindowId) {
     this.canvas = document.getElementById(canvasId);
     this.ctx = this.canvas.getContext("2d");
+    this.scoreWindow = document.getElementById(scoreWindowId);
     this.board = Array.from({ length: GAME_SETTINGS.BOARD_ROWS }, () =>
       Array(GAME_SETTINGS.BOARD_COLUMNS).fill(null)
     );
@@ -79,6 +82,9 @@ export class TetrisGame {
     this.currentTetromino = this.generateTetromino();
     this.lastFallTime = 0;
 
+    // ゲームスコアの初期化
+    this.score = GAME_SETTINGS.INITIAL_SCORE;
+
     // ゲームボードの初期位置設定 GAME_SETTINGSを直接変更することを防ぐために、クラスプロパティとしてxPositionとyPositionを使用。
     this.xPosition = GAME_SETTINGS.START_X_POSITION;
     this.yPosition = GAME_SETTINGS.START_Y_POSITION;
@@ -118,6 +124,7 @@ export class TetrisGame {
       this.moveTetrominoDown();
     }
 
+    this.clearAndUpdateScore();
     this.drawBoard();
     this.drawTetromino();
     requestAnimationFrame(this.gameLoop.bind(this)); // コンテキストを維持
@@ -307,5 +314,63 @@ export class TetrisGame {
     this.currentTetromino = this.generateTetromino();
     this.xPosition = GAME_SETTINGS.START_X_POSITION;
     this.yPosition = GAME_SETTINGS.START_Y_POSITION;
+  }
+
+  /**
+   * テトリスブロックが一列揃ったらクリアする
+   * クリアされた行はボードの一番上に新しい行として追加される
+   * クリアした行数に応じてスコアを加算し、スコアウィンドのhtmlに反映
+   *
+   * @returns {void}
+   */
+  clearAndUpdateScore() {
+    let rowsToDelete = []; // クリアされる行のインデックスを格納する配列
+
+    // ボードの各行をすべてチェックする。
+    for (let row = 0; row < GAME_SETTINGS.BOARD_ROWS; row++) {
+      if (this.board[row].every((cell) => cell != null)) {
+        rowsToDelete.push(row);
+      }
+    }
+
+    // クリアされる行を削除し、新しく空の行を追加。
+    rowsToDelete.forEach((row) => {
+      this.board.splice(row, 1); // クリアすべき行を1行削除。
+      this.board.unshift(Array(GAME_SETTINGS.BOARD_COLUMNS).fill(null));
+    });
+
+    if (rowsToDelete.length > 0) {
+      this.updateScore(rowsToDelete.length);
+    }
+  }
+
+  /**
+   * クリアした行数に応じてスコアをつけていく
+   * スコアウィンドウのhtmlに反映
+   *
+   * @param {number} lines - 一度にクリアされた行数
+   * @returns {void}
+   */
+  updateScore(lines) {
+    switch (lines) {
+      case 1:
+        this.score += 100;
+        break;
+      case 2:
+        this.score += 200;
+        break;
+      case 3:
+        this.score += 400;
+        break;
+      case 4:
+        this.score += 800;
+        break;
+      default:
+        this.score += 0;
+        break;
+    }
+    this.scoreWindow.innerHTML = `
+      <h2>${this.score}</h2>
+    `;
   }
 }
