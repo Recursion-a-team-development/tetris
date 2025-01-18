@@ -8,6 +8,10 @@ export const GAME_SETTINGS = {
   BOARD_COLUMNS: 10,
   BOARD_ROWS: 20,
   BLOCK_SIZE: 30,
+  ARROW_LEFT: "ArrowLeft",
+  ARROW_RIGHT: "ArrowRight",
+  DIERCTION_LEFT: "left",
+  DIRECTION_RIGHT: "right",
 };
 
 /**
@@ -83,6 +87,14 @@ export class TetrisGame {
     document.addEventListener("keydown", (event) =>
       this.controlTetromino(event)
     );
+
+    // キーボードの矢印キー
+    this.arrowLeft = GAME_SETTINGS.ARROW_LEFT;
+    this.arrowRight = GAME_SETTINGS.ARROW_RIGHT;
+
+    // テトリスブロックの移動方向
+    this.directionLeft = GAME_SETTINGS.DIERCTION_LEFT;
+    this.directionRight = GAME_SETTINGS.DIRECTION_RIGHT;
   }
 
   /**
@@ -208,9 +220,9 @@ export class TetrisGame {
    * @returns {void}
    */
   controlTetromino(event) {
-    if (event.key === "ArrowLeft") {
+    if (event.key === this.arrowLeft) {
       this.moveTetrominoLeft();
-    } else if (event.key === "ArrowRight") {
+    } else if (event.key === this.arrowRight) {
       this.moveTetrominoRight();
     }
   }
@@ -220,7 +232,7 @@ export class TetrisGame {
    * @returns {void}
    */
   moveTetrominoLeft() {
-    if (!this.isTetrominoAtSides("left")) {
+    if (!this.isTetrominoAtSides(this.directionLeft)) {
       this.xPosition--;
 
       // 移動後にブロックが底に到達した場合、ブロックを固定して新しいブロックを生成
@@ -238,7 +250,7 @@ export class TetrisGame {
    * @returns {void}
    */
   moveTetrominoRight() {
-    if (!this.isTetrominoAtSides("right")) {
+    if (!this.isTetrominoAtSides(this.directionRight)) {
       this.xPosition++;
 
       // 移動後にブロックが底に到達した場合、ブロックを固定して新しいブロックを生成
@@ -262,7 +274,7 @@ export class TetrisGame {
         if (this.currentTetromino.shape[row][col]) {
           // 移動後のx位置を計算
           const newXPosition =
-            direction === "left"
+            direction === this.directionLeft
               ? this.xPosition + col - 1
               : this.xPosition + col + 1;
           // 左右に壁があるかを判定
