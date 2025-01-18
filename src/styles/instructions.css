@@ -1,0 +1,57 @@
+.item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 540px;
+    text-align: center;
+    color: #fff;
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.item__blue {
+    background: rgb(68 174 255);
+}
+
+.item__red {
+    background: rgb(248 82 1);
+}
+
+.item__yellow {
+    background: rgb(255 213 27);
+    color: #585858;
+}
+
+.item__purple {
+    background: rgb(227, 72, 255);
+}
+
+.spacer {
+    height: 20rem;
+}
+
+.swiper-button-prev,
+.swiper-button-next {
+    background: none;
+    border: none;
+    padding: 0;
+    width: 80px;
+    height: 80px;
+    cursor: pointer;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.swiper-button-prev::after,
+.swiper-button-next::after {
+    content: '';
+}
+
+.swiper-button-prev {
+    transform: rotate(90deg);
+}
+
+.swiper-button-next {
+    transform: rotate(-90deg);
+}
