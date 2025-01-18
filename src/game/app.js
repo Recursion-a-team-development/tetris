@@ -8,6 +8,10 @@ export const GAME_SETTINGS = {
   BOARD_COLUMNS: 10,
   BOARD_ROWS: 20,
   BLOCK_SIZE: 30,
+  ARROW_LEFT: "ArrowLeft",
+  ARROW_RIGHT: "ArrowRight",
+  DIRECTION_LEFT: "left",
+  DIRECTION_RIGHT: "right",
 };
 
 /**
@@ -78,6 +82,19 @@ export class TetrisGame {
     // ゲームボードの初期位置設定 GAME_SETTINGSを直接変更することを防ぐために、クラスプロパティとしてxPositionとyPositionを使用。
     this.xPosition = GAME_SETTINGS.START_X_POSITION;
     this.yPosition = GAME_SETTINGS.START_Y_POSITION;
+
+    // キーボードイベントのリスナーを追加
+    document.addEventListener("keydown", (event) =>
+      this.controlTetromino(event)
+    );
+
+    // キーボードの矢印キー
+    this.arrowLeft = GAME_SETTINGS.ARROW_LEFT;
+    this.arrowRight = GAME_SETTINGS.ARROW_RIGHT;
+
+    // テトリスブロックの移動方向
+    this.directionLeft = GAME_SETTINGS.DIRECTION_LEFT;
+    this.directionRight = GAME_SETTINGS.DIRECTION_RIGHT;
   }
 
   /**
@@ -189,11 +206,59 @@ export class TetrisGame {
   moveTetrominoDown() {
     this.yPosition++;
     if (this.isTetrominoAtBottom()) {
-      this.freezeTetromino();
-      this.currentTetromino = this.generateTetromino();
-      this.xPosition = GAME_SETTINGS.START_X_POSITION;
-      this.yPosition = GAME_SETTINGS.START_Y_POSITION;
+      this.freezeAndGenerateTetromino();
     }
+  }
+
+  /**
+   * テトリスブロックを左右に移動させる
+   *
+   * @param {KeyboardEvent} event - キーボードイベント
+   * @returns {void}
+   */
+  controlTetromino(event) {
+    if (event.key === this.arrowLeft) {
+      if (!this.isTetrominoAtSides(this.directionLeft)) {
+        this.xPosition--;
+      }
+    } else if (event.key === this.arrowRight) {
+      if (!this.isTetrominoAtSides(this.directionRight)) {
+        this.xPosition++;
+      }
+    }
+    // 移動後のブロックが底に到達した場合は固定して新しいブロックを生成
+    if (this.isTetrominoAtBottom()) {
+      this.freezeAndGenerateTetromino();
+    }
+  }
+
+  /**
+   * テトリスブロックが左右に移動できるかどうかを判定する
+   * @param {string} direction - 移動方向 ('left' または 'right')
+   * @returns {boolean} - 移動できない場合は`true`、移動できる場合は`false`
+   */
+  isTetrominoAtSides(direction) {
+    for (let row = 0; row < this.currentTetromino.shape.length; row++) {
+      for (let col = 0; col < this.currentTetromino.shape[row].length; col++) {
+        if (this.currentTetromino.shape[row][col]) {
+          // 移動後のx位置を計算
+          const newXPosition =
+            direction === this.directionLeft
+              ? this.xPosition + col - 1
+              : this.xPosition + col + 1;
+          // 左右に壁があるかを判定
+          if (newXPosition < 0 || newXPosition >= GAME_SETTINGS.BOARD_COLUMNS) {
+            return true;
+          }
+
+          // 左右にミノがあるかを判定
+          if (this.board[this.yPosition + row][newXPosition]) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
   }
 
   /**
@@ -231,5 +296,16 @@ export class TetrisGame {
         }
       }
     }
+  }
+
+  /**
+   * テトリスブロックの固定＆新しいテトリスブロックの生成をまとめて処理する
+   * @returns {void}
+   */
+  freezeAndGenerateTetromino() {
+    this.freezeTetromino();
+    this.currentTetromino = this.generateTetromino();
+    this.xPosition = GAME_SETTINGS.START_X_POSITION;
+    this.yPosition = GAME_SETTINGS.START_Y_POSITION;
   }
 }
