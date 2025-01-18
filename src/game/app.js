@@ -206,10 +206,7 @@ export class TetrisGame {
   moveTetrominoDown() {
     this.yPosition++;
     if (this.isTetrominoAtBottom()) {
-      this.freezeTetromino();
-      this.currentTetromino = this.generateTetromino();
-      this.xPosition = GAME_SETTINGS.START_X_POSITION;
-      this.yPosition = GAME_SETTINGS.START_Y_POSITION;
+      this.freezeAndGenerateTetromino();
     }
   }
 
@@ -234,13 +231,8 @@ export class TetrisGame {
   moveTetrominoLeft() {
     if (!this.isTetrominoAtSides(this.directionLeft)) {
       this.xPosition--;
-
-      // 移動後にブロックが底に到達した場合、ブロックを固定して新しいブロックを生成
       if (this.isTetrominoAtBottom()) {
-        this.freezeTetromino();
-        this.currentTetromino = this.generateTetromino();
-        this.xPosition = GAME_SETTINGS.START_X_POSITION;
-        this.yPosition = GAME_SETTINGS.START_Y_POSITION;
+        this.freezeAndGenerateTetromino();
       }
     }
   }
@@ -252,13 +244,8 @@ export class TetrisGame {
   moveTetrominoRight() {
     if (!this.isTetrominoAtSides(this.directionRight)) {
       this.xPosition++;
-
-      // 移動後にブロックが底に到達した場合、ブロックを固定して新しいブロックを生成
       if (this.isTetrominoAtBottom()) {
-        this.freezeTetromino();
-        this.currentTetromino = this.generateTetromino();
-        this.xPosition = GAME_SETTINGS.START_X_POSITION;
-        this.yPosition = GAME_SETTINGS.START_Y_POSITION;
+        this.freezeAndGenerateTetromino();
       }
     }
   }
@@ -327,5 +314,16 @@ export class TetrisGame {
         }
       }
     }
+  }
+
+  /**
+   * テトリスブロックの固定＆新しいテトリスブロックの生成をまとめて処理する
+   * @returns {void}
+   */
+  freezeAndGenerateTetromino() {
+    this.freezeTetromino();
+    this.currentTetromino = this.generateTetromino();
+    this.xPosition = GAME_SETTINGS.START_X_POSITION;
+    this.yPosition = GAME_SETTINGS.START_Y_POSITION;
   }
 }
