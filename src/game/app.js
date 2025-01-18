@@ -244,15 +244,18 @@ export class TetrisGame {
     for (let row = 0; row < this.currentTetromino.shape.length; row++) {
       for (let col = 0; col < this.currentTetromino.shape[row].length; col++) {
         if (this.currentTetromino.shape[row][col]) {
+          // 移動後のx位置を計算
           const newXPosition =
             direction === "left"
               ? this.xPosition + col - 1
               : this.xPosition + col + 1;
-          if (
-            newXPosition < 0 ||
-            newXPosition >= GAME_SETTINGS.BOARD_COLUMNS ||
-            this.board[this.yPosition + row][newXPosition]
-          ) {
+          // 左右に壁があるかを判定
+          if (newXPosition < 0 || newXPosition >= GAME_SETTINGS.BOARD_COLUMNS) {
+            return true;
+          }
+
+          // 左右にミノがあるかを判定
+          if (this.board[this.yPosition + row][newXPosition]) {
             return true;
           }
         }
