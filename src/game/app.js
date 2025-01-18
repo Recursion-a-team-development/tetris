@@ -220,7 +220,7 @@ export class TetrisGame {
    * @returns {void}
    */
   moveTetrominoLeft() {
-    if (this.xPosition > 0 && !this.isTetrominoAtSides("left")) {
+    if (!this.isTetrominoAtSides("left")) {
       this.xPosition--;
     }
   }
@@ -230,11 +230,7 @@ export class TetrisGame {
    * @returns {void}
    */
   moveTetrominoRight() {
-    if (
-      this.xPosition + this.currentTetromino.shape[0].length <
-        GAME_SETTINGS.BOARD_COLUMNS &&
-      !this.isTetrominoAtSides("right")
-    ) {
+    if (!this.isTetrominoAtSides("right")) {
       this.xPosition++;
     }
   }
