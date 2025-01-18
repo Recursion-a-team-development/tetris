@@ -78,6 +78,11 @@ export class TetrisGame {
     // ゲームボードの初期位置設定 GAME_SETTINGSを直接変更することを防ぐために、クラスプロパティとしてxPositionとyPositionを使用。
     this.xPosition = GAME_SETTINGS.START_X_POSITION;
     this.yPosition = GAME_SETTINGS.START_Y_POSITION;
+
+    // キーボードイベントのリスナーを追加
+    document.addEventListener("keydown", (event) =>
+      this.controlTetromino(event)
+    );
   }
 
   /**
@@ -194,6 +199,70 @@ export class TetrisGame {
       this.xPosition = GAME_SETTINGS.START_X_POSITION;
       this.yPosition = GAME_SETTINGS.START_Y_POSITION;
     }
+  }
+
+  /**
+   * テトリスブロックを左右に移動させる
+   *
+   * @param {KeyboardEvent} event - キーボードイベント
+   * @returns {void}
+   */
+  controlTetromino(event) {
+    if (event.key === "ArrowLeft") {
+      this.moveTetrominoLeft();
+    } else if (event.key === "ArrowRight") {
+      this.moveTetrominoRight();
+    }
+  }
+
+  /**
+   * テトリスブロックを左に移動させる
+   * @returns {void}
+   */
+  moveTetrominoLeft() {
+    if (this.xPosition > 0 && !this.isTetrominoAtSides("left")) {
+      this.xPosition--;
+    }
+  }
+
+  /**
+   * テトリスブロックを右に移動させる
+   * @returns {void}
+   */
+  moveTetrominoRight() {
+    if (
+      this.xPosition + this.currentTetromino.shape[0].length <
+        GAME_SETTINGS.BOARD_COLUMNS &&
+      !this.isTetrominoAtSides("right")
+    ) {
+      this.xPosition++;
+    }
+  }
+
+  /**
+   * テトリスブロックが左右に移動できるかどうかを判定する
+   * @param {string} direction - 移動方向 ('left' または 'right')
+   * @returns {boolean} - 移動できない場合は`true`、移動できる場合は`false`
+   */
+  isTetrominoAtSides(direction) {
+    for (let row = 0; row < this.currentTetromino.shape.length; row++) {
+      for (let col = 0; col < this.currentTetromino.shape[row].length; col++) {
+        if (this.currentTetromino.shape[row][col]) {
+          const newXPosition =
+            direction === "left"
+              ? this.xPosition + col - 1
+              : this.xPosition + col + 1;
+          if (
+            newXPosition < 0 ||
+            newXPosition >= GAME_SETTINGS.BOARD_COLUMNS ||
+            this.board[this.yPosition + row][newXPosition]
+          ) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
   }
 
   /**
