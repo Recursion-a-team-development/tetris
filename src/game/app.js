@@ -12,6 +12,7 @@ export const GAME_SETTINGS = {
   ARROW_LEFT: "ArrowLeft",
   ARROW_RIGHT: "ArrowRight",
   ARROW_DOWN: "ArrowDown",
+  SPACE_KEY: " ",
   DIRECTION_LEFT: "left",
   DIRECTION_RIGHT: "right",
 };
@@ -99,6 +100,9 @@ export class TetrisGame {
     this.arrowLeft = GAME_SETTINGS.ARROW_LEFT;
     this.arrowRight = GAME_SETTINGS.ARROW_RIGHT;
     this.arrowDown = GAME_SETTINGS.ARROW_DOWN;
+
+    // スペースキー
+    this.spaceKey = GAME_SETTINGS.SPACE_KEY;
 
     // テトリスブロックの移動方向
     this.directionLeft = GAME_SETTINGS.DIRECTION_LEFT;
@@ -220,7 +224,7 @@ export class TetrisGame {
   }
 
   /**
-   * テトリスブロックを左右＆下に移動させる
+   * キーを使用したテトリスブロックの操作
    *
    * @param {KeyboardEvent} event - キーボードイベント
    * @returns {void}
@@ -236,6 +240,10 @@ export class TetrisGame {
       }
     } else if (event.key === this.arrowDown) {
       this.moveTetrominoDown();
+    } else if (event.key === this.spaceKey) {
+      while (!this.isTetrominoAtBottom()) {
+        this.yPosition++;
+      }
     }
     // 移動後のブロックが底に到達した場合は固定して新しいブロックを生成
     if (this.isTetrominoAtBottom()) {
