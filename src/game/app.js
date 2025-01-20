@@ -72,15 +72,15 @@ export class TetrisGame {
           [1, 0, 0],
           [1, 1, 1],
         ],
-        color: GAME_SETTINGS.COLORS.L,
-      }, // L型
+        color: GAME_SETTINGS.COLORS.J,
+      }, // J型
       {
         shape: [
           [0, 0, 1],
           [1, 1, 1],
         ],
-        color: GAME_SETTINGS.COLORS.J,
-      }, // J型
+        color: GAME_SETTINGS.COLORS.L,
+      }, // L型
       {
         shape: [
           [0, 1, 0],
