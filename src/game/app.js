@@ -36,48 +36,48 @@ export class TetrisGame {
     );
 
     this.tetrominoes = [
-      { shape: [[1, 1, 1, 1]], color: "red" }, // I型
+      { shape: [[1, 1, 1, 1]], color: "rgba(0, 233, 233, 0.9)" }, // I型
       {
         shape: [
           [1, 1],
           [1, 1],
         ],
-        color: "blue",
+        color: "rgba(200, 200, 0, 0.9)",
       }, // O型
       {
         shape: [
           [1, 1, 0],
           [0, 1, 1],
         ],
-        color: "green",
+        color: "rgba(200, 0, 0, 0.9)",
       }, // Z型
       {
         shape: [
           [0, 1, 1],
           [1, 1, 0],
         ],
-        color: "purple",
+        color: "rgba(0, 150, 0, 0.9)",
       }, // S型
       {
         shape: [
           [1, 0, 0],
           [1, 1, 1],
         ],
-        color: "yellow",
+        color: "rgba(255, 120, 0, 0.9)",
       }, // L型
       {
         shape: [
           [0, 0, 1],
           [1, 1, 1],
         ],
-        color: "orange",
+        color: "rgba(6, 78, 211, 0.9)",
       }, // J型
       {
         shape: [
           [0, 1, 0],
           [1, 1, 1],
         ],
-        color: "cyan",
+        color: "rgba(100, 0, 100, 0.9)",
       }, // T型
     ];
 
