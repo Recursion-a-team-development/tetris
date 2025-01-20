@@ -178,7 +178,18 @@ export class TetrisGame {
     for (let row = 0; row < this.currentTetromino.shape.length; row++) {
       for (let col = 0; col < this.currentTetromino.shape[row].length; col++) {
         if (this.currentTetromino.shape[row][col]) {
+          // ブロックの形で範囲を塗りつぶす
           this.ctx.fillRect(
+            (this.xPosition + col) * GAME_SETTINGS.BLOCK_SIZE,
+            (this.yPosition + row) * GAME_SETTINGS.BLOCK_SIZE,
+            GAME_SETTINGS.BLOCK_SIZE,
+            GAME_SETTINGS.BLOCK_SIZE
+          );
+
+          // ブロックの外周を線で描くことでグリッド線を疑似的に描画
+          this.ctx.lineWidth = 1;
+          this.ctx.strokeStyle = "gray"; //グリッド線の色
+          this.ctx.strokeRect(
             (this.xPosition + col) * GAME_SETTINGS.BLOCK_SIZE,
             (this.yPosition + row) * GAME_SETTINGS.BLOCK_SIZE,
             GAME_SETTINGS.BLOCK_SIZE,
