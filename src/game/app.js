@@ -15,6 +15,15 @@ export const GAME_SETTINGS = {
   SPACE_KEY: " ",
   DIRECTION_LEFT: "left",
   DIRECTION_RIGHT: "right",
+  COLORS: {
+    I: "rgba(0, 233, 233, 0.9)",
+    O: "rgba(200, 200, 0, 0.9)",
+    Z: "rgba(200, 0, 0, 0.9)",
+    S: "rgba(0, 150, 0, 0.9)",
+    L: "rgba(255, 120, 0, 0.9)",
+    J: "rgba(6, 78, 211, 0.9)",
+    T: "rgba(100, 0, 100, 0.9)",
+  },
 };
 
 /**
@@ -36,48 +45,48 @@ export class TetrisGame {
     );
 
     this.tetrominoes = [
-      { shape: [[1, 1, 1, 1]], color: "rgba(0, 233, 233, 0.9)" }, // I型
+      { shape: [[1, 1, 1, 1]], color: GAME_SETTINGS.COLORS.I }, // I型
       {
         shape: [
           [1, 1],
           [1, 1],
         ],
-        color: "rgba(200, 200, 0, 0.9)",
+        color: GAME_SETTINGS.COLORS.O,
       }, // O型
       {
         shape: [
           [1, 1, 0],
           [0, 1, 1],
         ],
-        color: "rgba(200, 0, 0, 0.9)",
+        color: GAME_SETTINGS.COLORS.Z,
       }, // Z型
       {
         shape: [
           [0, 1, 1],
           [1, 1, 0],
         ],
-        color: "rgba(0, 150, 0, 0.9)",
+        color: GAME_SETTINGS.COLORS.S,
       }, // S型
       {
         shape: [
           [1, 0, 0],
           [1, 1, 1],
         ],
-        color: "rgba(255, 120, 0, 0.9)",
+        color: GAME_SETTINGS.COLORS.L,
       }, // L型
       {
         shape: [
           [0, 0, 1],
           [1, 1, 1],
         ],
-        color: "rgba(6, 78, 211, 0.9)",
+        color: GAME_SETTINGS.COLORS.J,
       }, // J型
       {
         shape: [
           [0, 1, 0],
           [1, 1, 1],
         ],
-        color: "rgba(100, 0, 100, 0.9)",
+        color: GAME_SETTINGS.COLORS.T,
       }, // T型
     ];
 
