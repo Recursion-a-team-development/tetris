@@ -15,6 +15,15 @@ export const GAME_SETTINGS = {
   SPACE_KEY: " ",
   DIRECTION_LEFT: "left",
   DIRECTION_RIGHT: "right",
+  COLORS: {
+    I: "rgba(0, 233, 233, 0.9)",
+    O: "rgba(200, 200, 0, 0.9)",
+    Z: "rgba(200, 0, 0, 0.9)",
+    S: "rgba(0, 150, 0, 0.9)",
+    L: "rgba(255, 120, 0, 0.9)",
+    J: "rgba(6, 78, 211, 0.9)",
+    T: "rgba(100, 0, 100, 0.9)",
+  },
 };
 
 /**
@@ -36,48 +45,48 @@ export class TetrisGame {
     );
 
     this.tetrominoes = [
-      { shape: [[1, 1, 1, 1]], color: "red" }, // I型
+      { shape: [[1, 1, 1, 1]], color: GAME_SETTINGS.COLORS.I }, // I型
       {
         shape: [
           [1, 1],
           [1, 1],
         ],
-        color: "blue",
+        color: GAME_SETTINGS.COLORS.O,
       }, // O型
       {
         shape: [
           [1, 1, 0],
           [0, 1, 1],
         ],
-        color: "green",
+        color: GAME_SETTINGS.COLORS.Z,
       }, // Z型
       {
         shape: [
           [0, 1, 1],
           [1, 1, 0],
         ],
-        color: "purple",
+        color: GAME_SETTINGS.COLORS.S,
       }, // S型
       {
         shape: [
           [1, 0, 0],
           [1, 1, 1],
         ],
-        color: "yellow",
-      }, // L型
+        color: GAME_SETTINGS.COLORS.J,
+      }, // J型
       {
         shape: [
           [0, 0, 1],
           [1, 1, 1],
         ],
-        color: "orange",
-      }, // J型
+        color: GAME_SETTINGS.COLORS.L,
+      }, // L型
       {
         shape: [
           [0, 1, 0],
           [1, 1, 1],
         ],
-        color: "cyan",
+        color: GAME_SETTINGS.COLORS.T,
       }, // T型
     ];
 
@@ -178,7 +187,18 @@ export class TetrisGame {
     for (let row = 0; row < this.currentTetromino.shape.length; row++) {
       for (let col = 0; col < this.currentTetromino.shape[row].length; col++) {
         if (this.currentTetromino.shape[row][col]) {
+          // ブロックの形で範囲を塗りつぶす
           this.ctx.fillRect(
+            (this.xPosition + col) * GAME_SETTINGS.BLOCK_SIZE,
+            (this.yPosition + row) * GAME_SETTINGS.BLOCK_SIZE,
+            GAME_SETTINGS.BLOCK_SIZE,
+            GAME_SETTINGS.BLOCK_SIZE
+          );
+
+          // ブロックの外周を線で描くことでグリッド線を疑似的に描画
+          this.ctx.lineWidth = 1;
+          this.ctx.strokeStyle = "gray"; //グリッド線の色
+          this.ctx.strokeRect(
             (this.xPosition + col) * GAME_SETTINGS.BLOCK_SIZE,
             (this.yPosition + row) * GAME_SETTINGS.BLOCK_SIZE,
             GAME_SETTINGS.BLOCK_SIZE,
