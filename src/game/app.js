@@ -4,7 +4,6 @@
 export const GAME_SETTINGS = {
   START_X_POSITION: 3,
   START_Y_POSITION: 0,
-  INITIAL_FALL_INTERVAL: 800,
   INITIAL_SCORE: 0,
   BOARD_COLUMNS: 10,
   BOARD_ROWS: 20,
@@ -23,6 +22,12 @@ export const GAME_SETTINGS = {
     L: "rgba(255, 120, 0, 0.9)",
     J: "rgba(6, 78, 211, 0.9)",
     T: "rgba(100, 0, 100, 0.9)",
+  },
+  FALL_INTERVALS: {
+    INITIAL: 800,
+    MIN: 400,
+    REDUCTION: 100,
+    STEP: 15000,
   },
 };
 
@@ -96,6 +101,9 @@ export class TetrisGame {
     // ゲームスコアの初期化
     this.score = GAME_SETTINGS.INITIAL_SCORE;
 
+    // 落下間隔の初期設定
+    this.fallInterval = GAME_SETTINGS.FALL_INTERVALS.INITIAL;
+
     // ゲームボードの初期位置設定 GAME_SETTINGSを直接変更することを防ぐために、クラスプロパティとしてxPositionとyPositionを使用。
     this.xPosition = GAME_SETTINGS.START_X_POSITION;
     this.yPosition = GAME_SETTINGS.START_Y_POSITION;
@@ -104,6 +112,9 @@ export class TetrisGame {
     document.addEventListener("keydown", (event) =>
       this.controlTetromino(event)
     );
+
+    // startTimeをnullで初期化
+    this.startTime = null;
   }
 
   /**
@@ -113,6 +124,9 @@ export class TetrisGame {
    */
   startGame() {
     this.gameLoop();
+
+    // ゲームの開始時刻を記録
+    this.startTime = Date.now();
   }
 
   /**
@@ -122,11 +136,12 @@ export class TetrisGame {
    * @returns {void}
    */
   gameLoop(timestamp) {
-    if (timestamp - this.lastFallTime >= GAME_SETTINGS.INITIAL_FALL_INTERVAL) {
+    if (timestamp - this.lastFallTime >= this.fallInterval) {
       this.lastFallTime = timestamp;
       this.moveTetrominoDown();
     }
 
+    this.adjustFallInterval();
     this.clearAndUpdateScore();
     this.drawBoard();
     this.drawTetromino();
@@ -392,5 +407,25 @@ export class TetrisGame {
     this.scoreWindow.innerHTML = `
       <h2>${this.score}</h2>
     `;
+  }
+
+  /**
+   * GAME_SETTINGS.FALLINTERVALSの設定に基づいて、落下間隔を調整する
+   *
+   * @returns {void}
+   */
+  adjustFallInterval() {
+    const elapsedTime = Date.now() - this.startTime;
+
+    // 経過時間が設定のSTEPを超えたら落下間隔を短縮する
+    if (elapsedTime >= GAME_SETTINGS.FALL_INTERVALS.STEP) {
+      this.fallInterval = Math.max(
+        GAME_SETTINGS.FALL_INTERVALS.MIN,
+        this.fallInterval - GAME_SETTINGS.FALL_INTERVALS.REDUCTION
+      );
+
+      // startTimeを現在の時間にして経過時間を現在の時刻からにする
+      this.startTime = Date.now();
+    }
   }
 }
