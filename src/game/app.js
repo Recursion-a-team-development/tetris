@@ -10,6 +10,7 @@ export const GAME_SETTINGS = {
   BLOCK_SIZE: 30,
   ARROW_LEFT: "ArrowLeft",
   ARROW_RIGHT: "ArrowRight",
+  ARROW_UP: "ArrowUp",
   ARROW_DOWN: "ArrowDown",
   SPACE_KEY: " ",
   DIRECTION_LEFT: "left",
@@ -50,7 +51,15 @@ export class TetrisGame {
     );
 
     this.tetrominoes = [
-      { shape: [[1, 1, 1, 1]], color: GAME_SETTINGS.COLORS.I }, // I型
+      {
+        shape: [
+          [0, 0, 0, 0],
+          [1, 1, 1, 1],
+          [0, 0, 0, 0],
+          [0, 0, 0, 0],
+        ],
+        color: GAME_SETTINGS.COLORS.I,
+      }, // I型
       {
         shape: [
           [1, 1],
@@ -62,6 +71,7 @@ export class TetrisGame {
         shape: [
           [1, 1, 0],
           [0, 1, 1],
+          [0, 0, 0],
         ],
         color: GAME_SETTINGS.COLORS.Z,
       }, // Z型
@@ -69,6 +79,7 @@ export class TetrisGame {
         shape: [
           [0, 1, 1],
           [1, 1, 0],
+          [0, 0, 0],
         ],
         color: GAME_SETTINGS.COLORS.S,
       }, // S型
@@ -76,6 +87,7 @@ export class TetrisGame {
         shape: [
           [1, 0, 0],
           [1, 1, 1],
+          [0, 0, 0],
         ],
         color: GAME_SETTINGS.COLORS.J,
       }, // J型
@@ -83,6 +95,7 @@ export class TetrisGame {
         shape: [
           [0, 0, 1],
           [1, 1, 1],
+          [0, 0, 0],
         ],
         color: GAME_SETTINGS.COLORS.L,
       }, // L型
@@ -90,6 +103,7 @@ export class TetrisGame {
         shape: [
           [0, 1, 0],
           [1, 1, 1],
+          [0, 0, 0],
         ],
         color: GAME_SETTINGS.COLORS.T,
       }, // T型
@@ -247,6 +261,46 @@ export class TetrisGame {
   }
 
   /**
+   * テトリスブロックを90度時計回りに回転させる
+   *
+   * @returns {void}
+   */
+  rotateTetromino() {
+    const rotatedShape = this.currentTetromino.shape[0].map((_, index) =>
+      this.currentTetromino.shape.map((row) => row[index]).reverse()
+    );
+
+    // 壁を越えないように調整
+    let offsetX = 0;
+    while (
+      this.isTetrominoOutOfBounds(rotatedShape, this.xPosition + offsetX)
+    ) {
+      offsetX += this.xPosition > 0 ? -1 : 1;
+    }
+
+    this.currentTetromino.shape = rotatedShape;
+    this.xPosition += offsetX;
+  }
+
+  /**
+   * 回転後のテトリスブロックがボードの範囲外にあるかどうかを判定する
+   * @param {Array} shape - テトリスブロックの形状
+   * @param {number} xPosition - 回転後のテトリスブロックのx座標
+   * @returns {boolean} - ブロックが範囲外にある場合は`true`、そうでない場合は`false`
+   * */
+  isTetrominoOutOfBounds(shape, xPosition) {
+    return shape.some((row) =>
+      row.some((cell, colIndex) => {
+        if (cell) {
+          const x = xPosition + colIndex;
+          return x < 0 || x >= this.board[0].length;
+        }
+        return false;
+      })
+    );
+  }
+
+  /**
    * キーを使用したテトリスブロックの操作
    *
    * @param {KeyboardEvent} event - キーボードイベント
@@ -267,6 +321,8 @@ export class TetrisGame {
       while (!this.isTetrominoAtBottom()) {
         this.yPosition++;
       }
+    } else if (event.key === GAME_SETTINGS.ARROW_UP) {
+      this.rotateTetromino();
     }
     // 移動後のブロックが底に到達した場合は固定して新しいブロックを生成
     if (this.isTetrominoAtBottom()) {
