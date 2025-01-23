@@ -270,12 +270,19 @@ export class TetrisGame {
       this.currentTetromino.shape.map((row) => row[index]).reverse()
     );
 
-    // 壁を越えないように調整
+    // 回転後のブロックがボードの範囲外にある場合はX軸の位置を調整
     let offsetX = 0;
     while (
       this.isTetrominoOutOfBounds(rotatedShape, this.xPosition + offsetX)
     ) {
       offsetX += this.xPosition > 0 ? -1 : 1;
+    }
+
+    // 回転後のブロックが他のブロックと重なる場合はX軸の位置を調整
+    if (this.isTetrominoAtSides(GAME_SETTINGS.DIRECTION_RIGHT)) {
+      this.xPosition -= 1;
+    } else if (this.isTetrominoAtSides(GAME_SETTINGS.DIRECTION_LEFT)) {
+      this.xPosition += 1;
     }
 
     this.currentTetromino.shape = rotatedShape;
