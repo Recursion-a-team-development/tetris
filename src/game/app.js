@@ -285,7 +285,7 @@ export class TetrisGame {
   /**
    * 回転後のテトリスブロックがボードの範囲外にあるかどうかを判定する
    * @param {Array} shape - テトリスブロックの形状
-   * @param {number} xPosition - 回転後のテトリスブロックのx座標
+   * @param {number} xPosition - テトリスブロックのx位置
    * @returns {boolean} - ブロックが範囲外にある場合は`true`、そうでない場合は`false`
    * */
   isTetrominoOutOfBounds(shape, xPosition) {
