@@ -19,6 +19,10 @@ export function renderGamePage() {
           <button id="backToTopButton">TOP画面へ</button>
         </div>
         <canvas id="tetris-board" width="300" height="600"></canvas>
+        <div class="next-tetromino mt-2">
+          <h3>NEXT</h3>
+          <canvas id="next-tetromino" width="120" height="120"></canvas>
+        </div>
       </div>
     </div>
   `;
