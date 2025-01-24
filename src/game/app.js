@@ -501,7 +501,9 @@ export class TetrisGame {
     // ラインがクリアされたら行数分の効果音を鳴らす
     if (scoreIncrease > 0) {
       for (let i = 0; i < lines; i++) {
-        this.playSoundEffect("src/assets/audio/sound-effect/clearline.mp3");
+        setTimeout(() => {
+          this.playSoundEffect("src/assets/audio/sound-effect/clearline.mp3");
+        }, i * 300); // 複数回のときは300msの間隔を開けて鳴らす
       }
     }
 
