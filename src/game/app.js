@@ -387,23 +387,34 @@ export class TetrisGame {
    * @returns {void}
    */
   updateScore(lines) {
+    let scoreIncrease = 0;
+
     switch (lines) {
       case 1:
-        this.score += 100;
+        scoreIncrease = 100;
         break;
       case 2:
-        this.score += 200;
+        scoreIncrease = 200;
         break;
       case 3:
-        this.score += 400;
+        scoreIncrease = 400;
         break;
       case 4:
-        this.score += 800;
+        scoreIncrease = 800;
         break;
       default:
-        this.score += 0;
+        scoreIncrease = 0;
         break;
     }
+    // ラインがクリアされたら行数分の効果音を鳴らす
+    if (scoreIncrease > 0) {
+      for (let i = 0; i < lines; i++) {
+        this.playSoundEffect("src/assets/audio/sound-effect/clearline.mp3");
+      }
+    }
+
+    this.score += scoreIncrease;
+
     this.scoreWindow.innerHTML = `
       <h2>${this.score}</h2>
     `;
@@ -427,5 +438,17 @@ export class TetrisGame {
       // startTimeを現在の時間にして経過時間を現在の時刻からにする
       this.startTime = Date.now();
     }
+  }
+
+  /**
+   * 効果音を再生
+   *
+   * @param {string} soundFile - 音声ファイルのパス
+   */
+  playSoundEffect(soundFile) {
+    const audio = new Audio(soundFile);
+    audio.play().catch((error) => {
+      console.error("効果音の再生に失敗: ", error);
+    });
   }
 }
