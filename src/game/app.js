@@ -270,19 +270,28 @@ export class TetrisGame {
       this.currentTetromino.shape.map((row) => row[index]).reverse()
     );
 
-    // 回転後のブロックがボードの範囲外にある場合はX軸の位置を調整
+    // 壁を越えないように調整
     let offsetX = 0;
     while (
       this.isTetrominoOutOfBounds(rotatedShape, this.xPosition + offsetX)
     ) {
       offsetX += this.xPosition > 0 ? -1 : 1;
+      if (Math.abs(offsetX) > rotatedShape[0].length) {
+        // 回転後の形が収まらない場合は回転をキャンセル
+        return;
+      }
     }
 
-    // 回転後のブロックが他のブロックと重なる場合はX軸の位置を調整
-    if (this.isTetrominoAtSides(GAME_SETTINGS.DIRECTION_RIGHT)) {
-      this.xPosition -= 1;
-    } else if (this.isTetrominoAtSides(GAME_SETTINGS.DIRECTION_LEFT)) {
-      this.xPosition += 1;
+    // ミノが他のブロックと重ならないように調整
+    if (
+      this.isTetrominoOverlapping(
+        rotatedShape,
+        this.xPosition + offsetX,
+        this.yPosition
+      )
+    ) {
+      // 回転に必要な空間がない場合は回転処理をキャンセル
+      return;
     }
 
     this.currentTetromino.shape = rotatedShape;
@@ -301,6 +310,26 @@ export class TetrisGame {
         if (cell) {
           const x = xPosition + colIndex;
           return x < 0 || x >= this.board[0].length;
+        }
+        return false;
+      })
+    );
+  }
+
+  /**
+   * 回転後のテトリスブロックが他のブロックと重なるかどうかを判定する
+   * @param {Array} shape - テトリスブロックの形状
+   * @param {number} xPosition - テトリスブロックのx位置
+   * @param {number} yPosition - テトリスブロックのy位置
+   * @returns {boolean} - ブロックが重なる場合は`true`、そうでない場合は`false`
+   */
+  isTetrominoOverlapping(shape, xPosition, yPosition) {
+    return shape.some((row, rowIndex) =>
+      row.some((cell, colIndex) => {
+        if (cell) {
+          const x = xPosition + colIndex;
+          const y = yPosition + rowIndex;
+          return this.board[y] && this.board[y][x];
         }
         return false;
       })
