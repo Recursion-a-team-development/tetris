@@ -258,13 +258,10 @@ export class TetrisGame {
       nextTetrominoCanvas.height
     );
 
-    // O型とI型以外のミノの場合、X軸とY軸を1増やす
+    // I型以外のミノの場合、X軸とY軸を1増やす
     let offsetX = 0;
     let offsetY = 0;
-    if (
-      this.nextTetromino.color !== GAME_SETTINGS.COLORS.O &&
-      this.nextTetromino.color !== GAME_SETTINGS.COLORS.I
-    ) {
+    if (this.nextTetromino.color !== GAME_SETTINGS.COLORS.I) {
       offsetX = 1;
       offsetY = 1;
     }
