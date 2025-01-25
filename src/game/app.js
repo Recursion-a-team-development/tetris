@@ -128,7 +128,7 @@ export class TetrisGame {
     this.xPosition = GAME_SETTINGS.START_X_POSITION;
     this.yPosition = GAME_SETTINGS.START_Y_POSITION;
 
-    // ゴーストテトリミノの初期位置設定
+    // ゴーストブロックの初期位置設定
     this.ghostXPosition = this.xPosition;
     this.ghostYPosition = this.yPosition;
 
@@ -176,6 +176,7 @@ export class TetrisGame {
     this.drawBoard();
     this.drawTetromino();
     this.drawGhostTetromino();
+    this.updateGhostTetromino();
     this.drawNextTetromino();
     requestAnimationFrame(this.gameLoop.bind(this)); // コンテキストを維持
   }
@@ -257,16 +258,12 @@ export class TetrisGame {
   }
 
   /**
-   * テトリスブロックの影を描画する
-   * ブロックが底に到達するまでの位置を描画する
+   * ゴーストブロックを描画する
+   * ゴーストブロックが底に到達するまでの位置を描画する
    * @returns {void}
    * */
   drawGhostTetromino() {
-    // テトリスブロックの影を描画するために、テトリスブロックの位置をコピー
-    this.ghostXPosition = this.xPosition;
-    this.ghostYPosition = 18;
-
-    // ブロックの影を描画
+    // ゴーストブロックを描画
     this.ctx.fillStyle = GAME_SETTINGS.COLORS.GHOST;
 
     for (let row = 0; row < this.ghostTetromino.shape.length; row++) {
@@ -286,6 +283,21 @@ export class TetrisGame {
           );
         }
       }
+    }
+  }
+
+  /**
+   * ゴーストブロックの位置を更新する
+   * @returns {void}
+   */
+  updateGhostTetromino() {
+    // ゴーストブロックを描画するために、テトリスブロックの位置をコピー
+    this.ghostXPosition = this.xPosition;
+    this.ghostYPosition = this.yPosition;
+
+    // ゴーストブロックが底に到達するまでの位置を計算
+    while (!this.isGhostTetrominoAtBottom()) {
+      this.ghostYPosition++;
     }
   }
 
@@ -506,6 +518,26 @@ export class TetrisGame {
           if (
             this.yPosition + row >= GAME_SETTINGS.BOARD_ROWS - 1 ||
             this.board[this.yPosition + row + 1][this.xPosition + col]
+          ) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * ゴーストブロックが底に到達したかどうかを判定する
+   * @returns {boolean} - ブロックが底に到達した場合は`true`、そうでない場合は`false`
+   * */
+  isGhostTetrominoAtBottom() {
+    for (let row = 0; row < this.ghostTetromino.shape.length; row++) {
+      for (let col = 0; col < this.ghostTetromino.shape[row].length; col++) {
+        if (this.ghostTetromino.shape[row][col]) {
+          if (
+            this.ghostYPosition + row >= GAME_SETTINGS.BOARD_ROWS - 1 ||
+            this.board[this.ghostYPosition + row + 1][this.ghostXPosition + col]
           ) {
             return true;
           }
