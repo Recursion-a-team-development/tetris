@@ -175,7 +175,6 @@ export class TetrisGame {
     this.clearAndUpdateScore();
     this.drawBoard();
     this.drawTetromino();
-    this.drawGhostTetromino();
     this.updateGhostTetromino();
     this.drawNextTetromino();
     requestAnimationFrame(this.gameLoop.bind(this)); // コンテキストを維持
@@ -230,54 +229,49 @@ export class TetrisGame {
    * @returns {void}
    */
   drawTetromino() {
-    this.ctx.fillStyle = this.currentTetromino.color;
+    this.drawBlock(
+      this.currentTetromino,
+      this.xPosition,
+      this.yPosition,
+      this.currentTetromino.color
+    );
+    this.drawBlock(
+      this.ghostTetromino,
+      this.ghostXPosition,
+      this.ghostYPosition,
+      GAME_SETTINGS.COLORS.GHOST
+    );
+  }
 
-    for (let row = 0; row < this.currentTetromino.shape.length; row++) {
-      for (let col = 0; col < this.currentTetromino.shape[row].length; col++) {
-        if (this.currentTetromino.shape[row][col]) {
+  /**
+   * テトリスブロック・ゴーストブロックを描画する
+   *
+   * @param {Object} tetromino - 描画するブロック
+   * @param {number} xPosition - x座標
+   * @param {number} yPosition - y座標
+   * @param {string} color - ブロックのカラー
+   * @returns {void}
+   */
+  drawBlock(tetromino, xPosition, yPosition, color) {
+    this.ctx.fillStyle = color;
+
+    for (let row = 0; row < tetromino.shape.length; row++) {
+      for (let col = 0; col < tetromino.shape[row].length; col++) {
+        if (tetromino.shape[row][col]) {
           // ブロックの形で範囲を塗りつぶす
           this.ctx.fillRect(
-            (this.xPosition + col) * GAME_SETTINGS.BLOCK_SIZE,
-            (this.yPosition + row) * GAME_SETTINGS.BLOCK_SIZE,
+            (xPosition + col) * GAME_SETTINGS.BLOCK_SIZE,
+            (yPosition + row) * GAME_SETTINGS.BLOCK_SIZE,
             GAME_SETTINGS.BLOCK_SIZE,
             GAME_SETTINGS.BLOCK_SIZE
           );
 
           // ブロックの外周を線で描くことでグリッド線を疑似的に描画
           this.ctx.lineWidth = 1;
-          this.ctx.strokeStyle = "gray"; //グリッド線の色
+          this.ctx.strokeStyle = "gray"; // グリッド線の色
           this.ctx.strokeRect(
-            (this.xPosition + col) * GAME_SETTINGS.BLOCK_SIZE,
-            (this.yPosition + row) * GAME_SETTINGS.BLOCK_SIZE,
-            GAME_SETTINGS.BLOCK_SIZE,
-            GAME_SETTINGS.BLOCK_SIZE
-          );
-        }
-      }
-    }
-  }
-
-  /**
-   * ゴーストブロックを描画する
-   * ゴーストブロックが底に到達するまでの位置を描画する
-   * @returns {void}
-   * */
-  drawGhostTetromino() {
-    // ゴーストブロックを描画
-    this.ctx.fillStyle = GAME_SETTINGS.COLORS.GHOST;
-
-    for (let row = 0; row < this.ghostTetromino.shape.length; row++) {
-      for (let col = 0; col < this.ghostTetromino.shape[row].length; col++) {
-        if (this.ghostTetromino.shape[row][col]) {
-          this.ctx.fillRect(
-            (this.ghostXPosition + col) * GAME_SETTINGS.BLOCK_SIZE,
-            (this.ghostYPosition + row) * GAME_SETTINGS.BLOCK_SIZE,
-            GAME_SETTINGS.BLOCK_SIZE,
-            GAME_SETTINGS.BLOCK_SIZE
-          );
-          this.ctx.strokeRect(
-            (this.ghostXPosition + col) * GAME_SETTINGS.BLOCK_SIZE,
-            (this.ghostYPosition + row) * GAME_SETTINGS.BLOCK_SIZE,
+            (xPosition + col) * GAME_SETTINGS.BLOCK_SIZE,
+            (yPosition + row) * GAME_SETTINGS.BLOCK_SIZE,
             GAME_SETTINGS.BLOCK_SIZE,
             GAME_SETTINGS.BLOCK_SIZE
           );
@@ -571,7 +565,6 @@ export class TetrisGame {
     this.freezeTetromino();
     this.currentTetromino = this.nextTetromino;
     this.ghostTetromino = this.currentTetromino;
-    this.drawGhostTetromino();
     this.nextTetromino = this.generateTetromino();
     this.xPosition = GAME_SETTINGS.START_X_POSITION;
     this.yPosition = GAME_SETTINGS.START_Y_POSITION;
