@@ -1,3 +1,5 @@
+import { renderTopPage } from "../pages/top";
+
 /**
  * ゲーム設定 クラス外で定義。
  */
@@ -163,6 +165,11 @@ export class TetrisGame {
    * @returns {void}
    */
   gameLoop(timestamp) {
+    if (this.isGameOver()) {
+      this.gameOver();
+      return;
+    }
+
     if (timestamp - this.lastFallTime >= this.fallInterval) {
       this.lastFallTime = timestamp;
       this.moveTetrominoDown();
@@ -507,10 +514,6 @@ export class TetrisGame {
     this.xPosition = GAME_SETTINGS.START_X_POSITION;
     this.yPosition = GAME_SETTINGS.START_Y_POSITION;
 
-    if (this.isGameOver()) {
-      this.gameOver();
-    }
-
     this.drawNextTetromino(); // 次のテトリミノを描画
   }
 
@@ -688,6 +691,18 @@ export class TetrisGame {
     // ゲームループを停止
     cancelAnimationFrame(this.animationFrameId);
     // スコアを表示
-    alert(`Your Score: "${this.score}"`);
+    const isConfirmed = confirm(
+      `Your Score: "${this.score} 再プレイしますか？`
+    );
+
+    if (!isConfirmed) {
+      renderTopPage();
+    } else {
+      const game = new TetrisGame("tetris-board", "score-window");
+      game.scoreWindow.innerHTML = `
+        <h2>${game.score}</h2>
+      `;
+      game.startGame();
+    }
   }
 }
