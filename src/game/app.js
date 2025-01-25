@@ -165,9 +165,10 @@ export class TetrisGame {
    * @returns {void}
    */
   gameLoop(timestamp) {
+    // ゲームオーバー判定
     if (this.isGameOver()) {
-      this.gameOver();
-      return;
+      this.gameOver(); // ゲームオーバー処理
+      return; // ゲームオーバー後はループを中断
     }
 
     if (timestamp - this.lastFallTime >= this.fallInterval) {
@@ -690,19 +691,19 @@ export class TetrisGame {
 
     // ゲームループを停止
     cancelAnimationFrame(this.animationFrameId);
-    // スコアを表示
-    const isConfirmed = confirm(
-      `Your Score: "${this.score} 再プレイしますか？`
-    );
 
+    // スコアを表示して再プレイするか選択してもらう
+    const isConfirmed = confirm(`Your Score: ${this.score} 再プレイしますか？`);
+
+    // 再プレイしなければトップページへ、再プレイならスコアウィンドウをクリアしてリスタート
     if (!isConfirmed) {
       renderTopPage();
     } else {
-      const game = new TetrisGame("tetris-board", "score-window");
-      game.scoreWindow.innerHTML = `
-        <h2>${game.score}</h2>
+      const newGame = new TetrisGame("tetris-board", "score-window");
+      newGame.scoreWindow.innerHTML = `
+        <h2>${newGame.score}</h2>
       `;
-      game.startGame();
+      newGame.startGame();
     }
   }
 }
