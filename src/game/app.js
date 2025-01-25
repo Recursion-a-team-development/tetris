@@ -113,6 +113,7 @@ export class TetrisGame {
     ];
 
     this.currentTetromino = this.generateTetromino();
+    this.nextTetromino = this.generateTetromino();
     this.lastFallTime = 0;
 
     // ゲームスコアの初期化
@@ -171,7 +172,10 @@ export class TetrisGame {
     this.clearAndUpdateScore();
     this.drawBoard();
     this.drawTetromino();
+
     this.animationFrameId = requestAnimationFrame(this.gameLoop.bind(this)); // コンテキストを維持
+
+    this.drawNextTetromino();
   }
 
   /**
@@ -248,6 +252,54 @@ export class TetrisGame {
         }
       }
     }
+  }
+
+  /**
+   * 次のテトリミノを描画する
+   *
+   * @returns {void}
+   */
+  drawNextTetromino() {
+    const nextTetrominoCanvas = document.getElementById("next-tetromino");
+    const context = nextTetrominoCanvas.getContext("2d");
+    const blockSize = GAME_SETTINGS.BLOCK_SIZE;
+
+    // キャンバスをクリア
+    context.clearRect(
+      0,
+      0,
+      nextTetrominoCanvas.width,
+      nextTetrominoCanvas.height
+    );
+
+    // I型以外のミノの場合、X軸とY軸を1増やす
+    let offsetX = 0;
+    let offsetY = 0;
+    if (this.nextTetromino.color !== GAME_SETTINGS.COLORS.I) {
+      offsetX = 1;
+      offsetY = 1;
+    }
+
+    // 次のテトリミノを描画
+    this.nextTetromino.shape.forEach((row, y) => {
+      row.forEach((value, x) => {
+        if (value) {
+          context.fillStyle = this.nextTetromino.color;
+          context.fillRect(
+            (x + offsetX) * blockSize,
+            (y + offsetY) * blockSize,
+            blockSize,
+            blockSize
+          );
+          context.strokeRect(
+            (x + offsetX) * blockSize,
+            (y + offsetY) * blockSize,
+            blockSize,
+            blockSize
+          );
+        }
+      });
+    });
   }
 
   /**
@@ -450,13 +502,16 @@ export class TetrisGame {
    */
   freezeAndGenerateTetromino() {
     this.freezeTetromino();
-    this.currentTetromino = this.generateTetromino();
+    this.currentTetromino = this.nextTetromino;
+    this.nextTetromino = this.generateTetromino();
     this.xPosition = GAME_SETTINGS.START_X_POSITION;
     this.yPosition = GAME_SETTINGS.START_Y_POSITION;
 
     if (this.isGameOver()) {
       this.gameOver();
     }
+
+    this.drawNextTetromino(); // 次のテトリミノを描画
   }
 
   /**
