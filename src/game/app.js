@@ -30,6 +30,9 @@ export const GAME_SETTINGS = {
     REDUCTION: 100,
     STEP: 15000,
   },
+  SOUND_EFFECTS: {
+    CLEAR_LINE: "src/assets/audio/sound-effect/clearline.mp3",
+  },
 };
 
 /**
@@ -126,6 +129,12 @@ export class TetrisGame {
     document.addEventListener("keydown", (event) =>
       this.controlTetromino(event)
     );
+
+    // 音声キャッシュを初期化
+    this.soundEffects = {};
+
+    // 効果音をキャッシュする
+    this.cacheSounds();
 
     // startTimeをnullで初期化
     this.startTime = null;
@@ -478,7 +487,7 @@ export class TetrisGame {
    * @param {number} lines - 一度にクリアされた行数
    * @returns {void}
    */
-  updateScore(lines) {
+  async updateScore(lines) {
     let scoreIncrease = 0;
 
     switch (lines) {
@@ -498,20 +507,20 @@ export class TetrisGame {
         scoreIncrease = 0;
         break;
     }
-    // ラインがクリアされたら行数分の効果音を鳴らす
-    if (scoreIncrease > 0) {
-      for (let i = 0; i < lines; i++) {
-        setTimeout(() => {
-          this.playSoundEffect("src/assets/audio/sound-effect/clearline.mp3");
-        }, i * 300); // 複数回のときは300msの間隔を開けて鳴らす
-      }
-    }
 
+    // スコアの更新は即座に行う
     this.score += scoreIncrease;
-
     this.scoreWindow.innerHTML = `
       <h2>${this.score}</h2>
     `;
+
+    // 音声を複数回鳴らす
+    if (scoreIncrease > 0) {
+      for (let i = 0; i < lines; i++) {
+        // 音声再生を待つ
+        await this.playSoundEffect("CLEAR_LINE");
+      }
+    }
   }
 
   /**
@@ -535,14 +544,40 @@ export class TetrisGame {
   }
 
   /**
+   * 効果音をキャッシュ
+   *
+   * @returns {void}
+   */
+  cacheSounds() {
+    for (const [key, soundPath] of Object.entries(
+      GAME_SETTINGS.SOUND_EFFECTS
+    )) {
+      const audio = new Audio(soundPath);
+      this.soundEffects[key] = audio; // 音声をキャッシュ
+    }
+  }
+
+  /**
    * 効果音を再生
    *
-   * @param {string} soundFile - 音声ファイルのパス
+   * @param {string} soundKey - 効果音のキー
+   * @returns {void}
    */
-  playSoundEffect(soundFile) {
-    const audio = new Audio(soundFile);
-    audio.play().catch((error) => {
-      console.error("効果音の再生に失敗: ", error);
-    });
+  async playSoundEffect(soundKey) {
+    const sound = this.soundEffects[soundKey];
+    if (sound) {
+      // 音声の再生が終わるまで待つための Promise を返す
+      return new Promise((resolve, reject) => {
+        sound.play().catch((error) => {
+          console.error("効果音の再生に失敗しました: ", error);
+          reject(error);
+        });
+
+        // 再生終了後に resolve を呼び出して次の音声を再生する
+        sound.onended = () => resolve();
+      });
+    } else {
+      console.warn(`指定された音声 "${soundKey}" がキャッシュされていません`);
+    }
   }
 }
