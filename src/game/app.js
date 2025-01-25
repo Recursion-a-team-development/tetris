@@ -23,6 +23,7 @@ export const GAME_SETTINGS = {
     L: "rgba(255, 120, 0, 0.9)",
     J: "rgba(6, 78, 211, 0.9)",
     T: "rgba(100, 0, 100, 0.9)",
+    GHOST: "rgba(0, 0, 0, 0.5)",
   },
   FALL_INTERVALS: {
     INITIAL: 800,
@@ -113,6 +114,7 @@ export class TetrisGame {
     ];
 
     this.currentTetromino = this.generateTetromino();
+    this.ghostTetromino = this.currentTetromino;
     this.nextTetromino = this.generateTetromino();
     this.lastFallTime = 0;
 
@@ -125,6 +127,10 @@ export class TetrisGame {
     // ゲームボードの初期位置設定 GAME_SETTINGSを直接変更することを防ぐために、クラスプロパティとしてxPositionとyPositionを使用。
     this.xPosition = GAME_SETTINGS.START_X_POSITION;
     this.yPosition = GAME_SETTINGS.START_Y_POSITION;
+
+    // ゴーストテトリミノの初期位置設定
+    this.ghostXPosition = this.xPosition;
+    this.ghostYPosition = this.yPosition;
 
     // キーボードイベントのリスナーを追加
     document.addEventListener("keydown", (event) =>
@@ -169,6 +175,7 @@ export class TetrisGame {
     this.clearAndUpdateScore();
     this.drawBoard();
     this.drawTetromino();
+    this.drawGhostTetromino();
     this.drawNextTetromino();
     requestAnimationFrame(this.gameLoop.bind(this)); // コンテキストを維持
   }
@@ -241,6 +248,39 @@ export class TetrisGame {
           this.ctx.strokeRect(
             (this.xPosition + col) * GAME_SETTINGS.BLOCK_SIZE,
             (this.yPosition + row) * GAME_SETTINGS.BLOCK_SIZE,
+            GAME_SETTINGS.BLOCK_SIZE,
+            GAME_SETTINGS.BLOCK_SIZE
+          );
+        }
+      }
+    }
+  }
+
+  /**
+   * テトリスブロックの影を描画する
+   * ブロックが底に到達するまでの位置を描画する
+   * @returns {void}
+   * */
+  drawGhostTetromino() {
+    // テトリスブロックの影を描画するために、テトリスブロックの位置をコピー
+    this.ghostXPosition = this.xPosition;
+    this.ghostYPosition = 18;
+
+    // ブロックの影を描画
+    this.ctx.fillStyle = GAME_SETTINGS.COLORS.GHOST;
+
+    for (let row = 0; row < this.ghostTetromino.shape.length; row++) {
+      for (let col = 0; col < this.ghostTetromino.shape[row].length; col++) {
+        if (this.ghostTetromino.shape[row][col]) {
+          this.ctx.fillRect(
+            (this.ghostXPosition + col) * GAME_SETTINGS.BLOCK_SIZE,
+            (this.ghostYPosition + row) * GAME_SETTINGS.BLOCK_SIZE,
+            GAME_SETTINGS.BLOCK_SIZE,
+            GAME_SETTINGS.BLOCK_SIZE
+          );
+          this.ctx.strokeRect(
+            (this.ghostXPosition + col) * GAME_SETTINGS.BLOCK_SIZE,
+            (this.ghostYPosition + row) * GAME_SETTINGS.BLOCK_SIZE,
             GAME_SETTINGS.BLOCK_SIZE,
             GAME_SETTINGS.BLOCK_SIZE
           );
@@ -498,6 +538,8 @@ export class TetrisGame {
   freezeAndGenerateTetromino() {
     this.freezeTetromino();
     this.currentTetromino = this.nextTetromino;
+    this.ghostTetromino = this.currentTetromino;
+    this.drawGhostTetromino();
     this.nextTetromino = this.generateTetromino();
     this.xPosition = GAME_SETTINGS.START_X_POSITION;
     this.yPosition = GAME_SETTINGS.START_Y_POSITION;
