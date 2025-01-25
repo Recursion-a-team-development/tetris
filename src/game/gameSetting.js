@@ -20,6 +20,7 @@ export const GAME_SETTINGS = {
     L: "rgba(255, 120, 0, 0.9)",
     J: "rgba(6, 78, 211, 0.9)",
     T: "rgba(100, 0, 100, 0.9)",
+    GHOST: "rgba(0, 0, 0, 0.5)",
   },
   FALL_INTERVALS: {
     INITIAL: 800,

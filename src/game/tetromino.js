@@ -82,10 +82,11 @@ export class Tetromino {
    * @param {CanvasRenderingContext2D} ctx - 描画対象のコンテキスト
    * @param {number} offsetX - 描画のXオフセット
    * @param {number} offsetY - 描画のYオフセット
+   * @param {string} color - ブロックの色
    * @returns {void}
    */
-  drawTetromino(ctx, xPosition, yPosition) {
-    ctx.fillStyle = this.color;
+  drawTetromino(ctx, xPosition, yPosition, color) {
+    ctx.fillStyle = color;
 
     for (let row = 0; row < this.shape.length; row++) {
       for (let col = 0; col < this.shape[row].length; col++) {
