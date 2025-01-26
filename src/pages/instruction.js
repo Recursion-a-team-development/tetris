@@ -1,18 +1,21 @@
-import Swiper from 'swiper';
-import { Navigation, Pagination, EffectCoverflow } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
-import 'swiper/css/effect-coverflow';
-import '../styles/instructions.css';
-import arrowImage from '../assets/images/arrow.png';
+import Swiper from "swiper";
+import { Navigation, Pagination, EffectCoverflow } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import "swiper/css/effect-coverflow";
+import "../styles/instructions.css";
+import arrowImage from "../assets/images/arrow.png";
+import instructions1 from "../assets/images/instructions1.png";
+import instructions2 from "../assets/images/instructions2.png";
+import instructions3 from "../assets/images/instructions3.png";
 Swiper.use([Navigation, Pagination, EffectCoverflow]);
 
 /**
  * 説明画面をレンダリングする
  *
  * @function renderInstructionsPage
- * @returns {void} 
+ * @returns {void}
  */
 export function renderInstructionsPage() {
   const app = document.getElementById("app");
@@ -21,19 +24,15 @@ export function renderInstructionsPage() {
     <div class="spacer"></div>
 
     <div class="swiper-container">
-      <!-- TODO: 画像を追加する -->
       <div class="swiper-wrapper">
         <div class="swiper-slide">
-          <div class="item item__red">1</div>
+          <img src="${instructions1}" alt="説明1" />
         </div>
         <div class="swiper-slide">
-          <div class="item item__blue">2</div>
+          <img src="${instructions2}" alt="説明2" />
         </div>
         <div class="swiper-slide">
-          <div class="item item__yellow">3</div>
-        </div>
-        <div class="swiper-slide">
-          <div class="item item__purple">4</div>
+          <img src="${instructions3}" alt="説明3" />
         </div>
       </div>
 
@@ -46,7 +45,6 @@ export function renderInstructionsPage() {
       </div>
     </div>
 
-    <!-- TODO: ボタンを他の画面と統一する -->
     <button id="backToTopButton">TOP画面へ</button>
   </div>
   `;
@@ -55,7 +53,7 @@ export function renderInstructionsPage() {
   const backButton = document.getElementById("backToTopButton");
   backButton.addEventListener("click", () => {
     import("./top.js").then((module) => module.renderTopPage());
-  }); 
+  });
 
   // Swiperの設定
   const swiper = new Swiper(".swiper-container", {
@@ -63,15 +61,15 @@ export function renderInstructionsPage() {
     pagination: {
       el: ".swiper-pagination",
     },
-  
+
     // 前後スライドボタンを表示
     navigation: {
       nextEl: ".swiper-button-next",
       prevEl: ".swiper-button-prev",
     },
-  
+
     loop: true, // ループの有効化
-  
+
     slidesPerView: 1.2, // 表示するスライドの枚数
     centeredSlides: true, // スライドを中央揃えを有効化
     effect: "coverflow",
@@ -82,12 +80,16 @@ export function renderInstructionsPage() {
       modifier: 1, // 効果の強さ
       slideShadows: true, // 先頭スライドのbox-shadowを有効化
     },
-  
+
     // 前後スライドボタンに画像を設定
     on: {
       init: function () {
-        document.querySelector(".swiper-button-prev").style.backgroundImage = `url(${arrowImage})`;
-        document.querySelector(".swiper-button-next").style.backgroundImage = `url(${arrowImage})`;
+        document.querySelector(
+          ".swiper-button-prev"
+        ).style.backgroundImage = `url(${arrowImage})`;
+        document.querySelector(
+          ".swiper-button-next"
+        ).style.backgroundImage = `url(${arrowImage})`;
       },
     },
   });
