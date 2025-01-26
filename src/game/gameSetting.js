@@ -1,3 +1,5 @@
+import clearlineSound from "../assets/audio/sound-effect/clearline.mp3";
+
 export const GAME_SETTINGS = {
   START_X_POSITION: 3,
   START_Y_POSITION: 0,
@@ -29,6 +31,6 @@ export const GAME_SETTINGS = {
     STEP: 15000,
   },
   SOUND_EFFECTS: {
-    CLEAR_LINE: "src/assets/audio/sound-effect/clearline.mp3",
+    CLEAR_LINE: clearlineSound,
   },
 };
