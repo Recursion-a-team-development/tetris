@@ -1,4 +1,3 @@
-
 import { renderTopPage } from "../pages/top";
 import { GAME_SETTINGS } from "./gameSetting.js";
 import { Tetromino } from "./tetromino.js";
@@ -439,7 +438,7 @@ export class TetrisGame {
 
     // スコアを表示して再プレイするか選択してもらう
     const isConfirmed = confirm(
-      `Your Score: ${this.score}\n再プレイしますか？`
+      `Your Score: ${this.score.score}\n再プレイしますか？`
     );
 
     // 再プレイしなければトップページへ、再プレイならスコアウィンドウをクリアしてリスタート
@@ -448,7 +447,7 @@ export class TetrisGame {
     } else {
       const newGame = new TetrisGame("tetris-board", "score-window");
       newGame.scoreWindow.innerHTML = `
-        <h2>${newGame.score}</h2>
+        <h2>${newGame.score.score}</h2>
       `;
       newGame.startGame();
     }
