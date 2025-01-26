@@ -693,7 +693,9 @@ export class TetrisGame {
     cancelAnimationFrame(this.animationFrameId);
 
     // スコアを表示して再プレイするか選択してもらう
-    const isConfirmed = confirm(`Your Score: ${this.score} 再プレイしますか？`);
+    const isConfirmed = confirm(
+      `Your Score: ${this.score}\n再プレイしますか？`
+    );
 
     // 再プレイしなければトップページへ、再プレイならスコアウィンドウをクリアしてリスタート
     if (!isConfirmed) {
