@@ -1,45 +1,11 @@
+
 import { renderTopPage } from "../pages/top";
+import { GAME_SETTINGS } from "./gameSetting.js";
+import { Tetromino } from "./tetromino.js";
+import { Score } from "./score.js";
+import { Board } from "./board.js";
+import { Sound } from "./sound.js";
 
-/**
- * ゲーム設定 クラス外で定義。
- */
-export const GAME_SETTINGS = {
-  START_X_POSITION: 3,
-  START_Y_POSITION: 0,
-  INITIAL_SCORE: 0,
-  BOARD_COLUMNS: 10,
-  BOARD_ROWS: 20,
-  BLOCK_SIZE: 30,
-  ARROW_LEFT: "ArrowLeft",
-  ARROW_RIGHT: "ArrowRight",
-  ARROW_UP: "ArrowUp",
-  ARROW_DOWN: "ArrowDown",
-  SPACE_KEY: " ",
-  DIRECTION_LEFT: "left",
-  DIRECTION_RIGHT: "right",
-  COLORS: {
-    I: "rgba(0, 233, 233, 0.9)",
-    O: "rgba(200, 200, 0, 0.9)",
-    Z: "rgba(200, 0, 0, 0.9)",
-    S: "rgba(0, 150, 0, 0.9)",
-    L: "rgba(255, 120, 0, 0.9)",
-    J: "rgba(6, 78, 211, 0.9)",
-    T: "rgba(100, 0, 100, 0.9)",
-  },
-  FALL_INTERVALS: {
-    INITIAL: 800,
-    MIN: 400,
-    REDUCTION: 100,
-    STEP: 15000,
-  },
-  SOUND_EFFECTS: {
-    CLEAR_LINE: "src/assets/audio/sound-effect/clearline.mp3",
-  },
-};
-
-/**
- * テトリスゲームを管理するクラス
- */
 export class TetrisGame {
   /**
    * コンストラクタ - テトリスゲームの初期設定を行います
@@ -48,96 +14,45 @@ export class TetrisGame {
    * @param {string} scoreWindowId - スコアウィンドウのID
    */
   constructor(canvasId, scoreWindowId) {
+    // キャンバスとコンテキストの取得
     this.canvas = document.getElementById(canvasId);
     this.ctx = this.canvas.getContext("2d");
     this.scoreWindow = document.getElementById(scoreWindowId);
-    this.board = Array.from({ length: GAME_SETTINGS.BOARD_ROWS }, () =>
-      Array(GAME_SETTINGS.BOARD_COLUMNS).fill(null)
-    );
 
-    this.tetrominoes = [
-      {
-        shape: [
-          [0, 0, 0, 0],
-          [1, 1, 1, 1],
-          [0, 0, 0, 0],
-          [0, 0, 0, 0],
-        ],
-        color: GAME_SETTINGS.COLORS.I,
-      }, // I型
-      {
-        shape: [
-          [1, 1],
-          [1, 1],
-        ],
-        color: GAME_SETTINGS.COLORS.O,
-      }, // O型
-      {
-        shape: [
-          [1, 1, 0],
-          [0, 1, 1],
-          [0, 0, 0],
-        ],
-        color: GAME_SETTINGS.COLORS.Z,
-      }, // Z型
-      {
-        shape: [
-          [0, 1, 1],
-          [1, 1, 0],
-          [0, 0, 0],
-        ],
-        color: GAME_SETTINGS.COLORS.S,
-      }, // S型
-      {
-        shape: [
-          [1, 0, 0],
-          [1, 1, 1],
-          [0, 0, 0],
-        ],
-        color: GAME_SETTINGS.COLORS.J,
-      }, // J型
-      {
-        shape: [
-          [0, 0, 1],
-          [1, 1, 1],
-          [0, 0, 0],
-        ],
-        color: GAME_SETTINGS.COLORS.L,
-      }, // L型
-      {
-        shape: [
-          [0, 1, 0],
-          [1, 1, 1],
-          [0, 0, 0],
-        ],
-        color: GAME_SETTINGS.COLORS.T,
-      }, // T型
-    ];
+    // テトリスブロックの初期化
+    this.currentTetromino = Tetromino.generateRandomTetromino();
+    this.ghostTetromino = this.currentTetromino;
+    this.nextTetromino = Tetromino.generateRandomTetromino();
 
-    this.currentTetromino = this.generateTetromino();
-    this.nextTetromino = this.generateTetromino();
-    this.lastFallTime = 0;
+    // ゲーム効果音の初期化
+    this.soundManager = new Sound(GAME_SETTINGS.SOUND_EFFECTS);
 
     // ゲームスコアの初期化
-    this.score = GAME_SETTINGS.INITIAL_SCORE;
+    this.score = new Score(
+      this.scoreWindow,
+      this.soundManager.playSoundEffect.bind(this.soundManager)
+    );
+
+    // ゲームボードの初期化
+    this.boardInstance = new Board(this.canvas, this.score);
+    this.board = this.boardInstance.board;
 
     // 落下間隔の初期設定
     this.fallInterval = GAME_SETTINGS.FALL_INTERVALS.INITIAL;
+    this.lastFallTime = 0;
 
     // ゲームボードの初期位置設定 GAME_SETTINGSを直接変更することを防ぐために、クラスプロパティとしてxPositionとyPositionを使用。
     this.xPosition = GAME_SETTINGS.START_X_POSITION;
     this.yPosition = GAME_SETTINGS.START_Y_POSITION;
 
+    // ゴーストブロックの初期位置設定
+    this.ghostXPosition = this.xPosition;
+    this.ghostYPosition = this.yPosition;
+
     // キーボードイベントのリスナーを追加
     document.addEventListener("keydown", (event) =>
       this.controlTetromino(event)
     );
-
-    // 音声キャッシュを初期化
-    this.soundEffects = {};
-
-    // 効果音をキャッシュする
-    this.cacheSounds();
 
     // ゲームオーバー処理が何度も呼ばれないようにフラグを追加
     this.gameOverFlag = false;
@@ -177,89 +92,23 @@ export class TetrisGame {
     }
 
     this.adjustFallInterval();
-    this.clearAndUpdateScore();
-    this.drawBoard();
-    this.drawTetromino();
-
-    this.animationFrameId = requestAnimationFrame(this.gameLoop.bind(this)); // コンテキストを維持
-
+    this.boardInstance.clearAndUpdateScore();
+    this.boardInstance.drawBoard();
+    this.currentTetromino.drawTetromino(
+      this.ctx,
+      this.xPosition,
+      this.yPosition,
+      this.currentTetromino.color
+    );
+    this.ghostTetromino.drawTetromino(
+      this.ctx,
+      this.ghostXPosition,
+      this.ghostYPosition,
+      GAME_SETTINGS.COLORS.GHOST
+    );
+    this.updateGhostTetromino();
     this.drawNextTetromino();
-  }
-
-  /**
-   * ボードを描画する
-   *
-   * @returns {void}
-   */
-  drawBoard() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // ボードをクリア
-    // ボードに固定されたブロックを描画
-    for (let row = 0; row < GAME_SETTINGS.BOARD_ROWS; row++) {
-      for (let col = 0; col < GAME_SETTINGS.BOARD_COLUMNS; col++) {
-        if (this.board[row][col] !== null) {
-          this.ctx.fillStyle = this.board[row][col];
-          this.ctx.fillRect(
-            col * GAME_SETTINGS.BLOCK_SIZE,
-            row * GAME_SETTINGS.BLOCK_SIZE,
-            GAME_SETTINGS.BLOCK_SIZE,
-            GAME_SETTINGS.BLOCK_SIZE
-          );
-          this.ctx.strokeRect(
-            col * GAME_SETTINGS.BLOCK_SIZE,
-            row * GAME_SETTINGS.BLOCK_SIZE,
-            GAME_SETTINGS.BLOCK_SIZE,
-            GAME_SETTINGS.BLOCK_SIZE
-          ); // 境界線
-        }
-      }
-    }
-
-    this.ctx.lineWidth = 1;
-    this.ctx.strokeStyle = "gray"; // グリッド線の色
-    // ボードのグリッドを描画
-    for (let row = 0; row < GAME_SETTINGS.BOARD_ROWS; row++) {
-      for (let col = 0; col < GAME_SETTINGS.BOARD_COLUMNS; col++) {
-        this.ctx.strokeRect(
-          col * GAME_SETTINGS.BLOCK_SIZE,
-          row * GAME_SETTINGS.BLOCK_SIZE,
-          GAME_SETTINGS.BLOCK_SIZE,
-          GAME_SETTINGS.BLOCK_SIZE
-        );
-      }
-    }
-  }
-
-  /**
-   * テトリスブロックを描画する
-   *
-   * @returns {void}
-   */
-  drawTetromino() {
-    this.ctx.fillStyle = this.currentTetromino.color;
-
-    for (let row = 0; row < this.currentTetromino.shape.length; row++) {
-      for (let col = 0; col < this.currentTetromino.shape[row].length; col++) {
-        if (this.currentTetromino.shape[row][col]) {
-          // ブロックの形で範囲を塗りつぶす
-          this.ctx.fillRect(
-            (this.xPosition + col) * GAME_SETTINGS.BLOCK_SIZE,
-            (this.yPosition + row) * GAME_SETTINGS.BLOCK_SIZE,
-            GAME_SETTINGS.BLOCK_SIZE,
-            GAME_SETTINGS.BLOCK_SIZE
-          );
-
-          // ブロックの外周を線で描くことでグリッド線を疑似的に描画
-          this.ctx.lineWidth = 1;
-          this.ctx.strokeStyle = "gray"; //グリッド線の色
-          this.ctx.strokeRect(
-            (this.xPosition + col) * GAME_SETTINGS.BLOCK_SIZE,
-            (this.yPosition + row) * GAME_SETTINGS.BLOCK_SIZE,
-            GAME_SETTINGS.BLOCK_SIZE,
-            GAME_SETTINGS.BLOCK_SIZE
-          );
-        }
-      }
-    }
+    this.animationFrameId = requestAnimationFrame(this.gameLoop.bind(this)); // コンテキストを維持
   }
 
   /**
@@ -269,8 +118,10 @@ export class TetrisGame {
    */
   drawNextTetromino() {
     const nextTetrominoCanvas = document.getElementById("next-tetromino");
+    if (!nextTetrominoCanvas) {
+      return;
+    }
     const context = nextTetrominoCanvas.getContext("2d");
-    const blockSize = GAME_SETTINGS.BLOCK_SIZE;
 
     // キャンバスをクリア
     context.clearRect(
@@ -280,44 +131,12 @@ export class TetrisGame {
       nextTetrominoCanvas.height
     );
 
-    // I型以外のミノの場合、X軸とY軸を1増やす
-    let offsetX = 0;
-    let offsetY = 0;
-    if (this.nextTetromino.color !== GAME_SETTINGS.COLORS.I) {
-      offsetX = 1;
-      offsetY = 1;
-    }
+    // I型以外のミノの場合、オフセットを調整
+    const offsetX = this.nextTetromino.color === GAME_SETTINGS.COLORS.I ? 0 : 1;
+    const offsetY = this.nextTetromino.color === GAME_SETTINGS.COLORS.I ? 0 : 1;
 
     // 次のテトリミノを描画
-    this.nextTetromino.shape.forEach((row, y) => {
-      row.forEach((value, x) => {
-        if (value) {
-          context.fillStyle = this.nextTetromino.color;
-          context.fillRect(
-            (x + offsetX) * blockSize,
-            (y + offsetY) * blockSize,
-            blockSize,
-            blockSize
-          );
-          context.strokeRect(
-            (x + offsetX) * blockSize,
-            (y + offsetY) * blockSize,
-            blockSize,
-            blockSize
-          );
-        }
-      });
-    });
-  }
-
-  /**
-   * 新しいテトリスブロックをランダムに生成する
-   *
-   * @returns {Object} - 生成されたテトリスブロックの形状と色
-   */
-  generateTetromino() {
-    const randomIndex = Math.floor(Math.random() * this.tetrominoes.length);
-    return this.tetrominoes[randomIndex];
+    this.nextTetromino.drawNext(context, offsetX, offsetY);
   }
 
   /**
@@ -468,6 +287,21 @@ export class TetrisGame {
   }
 
   /**
+   * ゴーストブロックの位置を更新する
+   * @returns {void}
+   */
+  updateGhostTetromino() {
+    // ゴーストブロックを描画するために、テトリスブロックの位置をコピー
+    this.ghostXPosition = this.xPosition;
+    this.ghostYPosition = this.yPosition;
+
+    // ゴーストブロックが底に到達するまでの位置を計算
+    while (!this.isGhostTetrominoAtBottom()) {
+      this.ghostYPosition++;
+    }
+  }
+
+  /**
    * テトリスブロックが底に到達したかどうかを判定する
    *
    * @returns {boolean} - ブロックが底に到達した場合は`true`、そうでない場合は`false`
@@ -479,6 +313,26 @@ export class TetrisGame {
           if (
             this.yPosition + row >= GAME_SETTINGS.BOARD_ROWS - 1 ||
             this.board[this.yPosition + row + 1][this.xPosition + col]
+          ) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * ゴーストブロックが底に到達したかどうかを判定する
+   * @returns {boolean} - ブロックが底に到達した場合は`true`、そうでない場合は`false`
+   * */
+  isGhostTetrominoAtBottom() {
+    for (let row = 0; row < this.ghostTetromino.shape.length; row++) {
+      for (let col = 0; col < this.ghostTetromino.shape[row].length; col++) {
+        if (this.ghostTetromino.shape[row][col]) {
+          if (
+            this.ghostYPosition + row >= GAME_SETTINGS.BOARD_ROWS - 1 ||
+            this.board[this.ghostYPosition + row + 1][this.ghostXPosition + col]
           ) {
             return true;
           }
@@ -511,82 +365,11 @@ export class TetrisGame {
   freezeAndGenerateTetromino() {
     this.freezeTetromino();
     this.currentTetromino = this.nextTetromino;
-    this.nextTetromino = this.generateTetromino();
+    this.nextTetromino = Tetromino.generateRandomTetromino();
     this.xPosition = GAME_SETTINGS.START_X_POSITION;
     this.yPosition = GAME_SETTINGS.START_Y_POSITION;
-
+    this.ghostTetromino = this.currentTetromino;
     this.drawNextTetromino(); // 次のテトリミノを描画
-  }
-
-  /**
-   * テトリスブロックが一列揃ったらクリアする
-   * クリアされた行はボードの一番上に新しい行として追加される
-   * クリアした行数に応じてスコアを加算し、スコアウィンドのhtmlに反映
-   *
-   * @returns {void}
-   */
-  clearAndUpdateScore() {
-    let rowsToDelete = []; // クリアされる行のインデックスを格納する配列
-
-    // ボードの各行をすべてチェックする。
-    for (let row = 0; row < GAME_SETTINGS.BOARD_ROWS; row++) {
-      if (this.board[row].every((cell) => cell != null)) {
-        rowsToDelete.push(row);
-      }
-    }
-
-    // クリアされる行を削除し、新しく空の行を追加。
-    rowsToDelete.forEach((row) => {
-      this.board.splice(row, 1); // クリアすべき行を1行削除。
-      this.board.unshift(Array(GAME_SETTINGS.BOARD_COLUMNS).fill(null));
-    });
-
-    if (rowsToDelete.length > 0) {
-      this.updateScore(rowsToDelete.length);
-    }
-  }
-
-  /**
-   * クリアした行数に応じてスコアをつけていく
-   * スコアウィンドウのhtmlに反映
-   *
-   * @param {number} lines - 一度にクリアされた行数
-   * @returns {void}
-   */
-  async updateScore(lines) {
-    let scoreIncrease = 0;
-
-    switch (lines) {
-      case 1:
-        scoreIncrease = 100;
-        break;
-      case 2:
-        scoreIncrease = 200;
-        break;
-      case 3:
-        scoreIncrease = 400;
-        break;
-      case 4:
-        scoreIncrease = 800;
-        break;
-      default:
-        scoreIncrease = 0;
-        break;
-    }
-
-    // スコアの更新は即座に行う
-    this.score += scoreIncrease;
-    this.scoreWindow.innerHTML = `
-      <h2>${this.score}</h2>
-    `;
-
-    // 音声を複数回鳴らす
-    if (scoreIncrease > 0) {
-      for (let i = 0; i < lines; i++) {
-        // 音声再生を待つ
-        await this.playSoundEffect("CLEAR_LINE");
-      }
-    }
   }
 
   /**
@@ -606,44 +389,6 @@ export class TetrisGame {
 
       // startTimeを現在の時間にして経過時間を現在の時刻からにする
       this.startTime = Date.now();
-    }
-  }
-
-  /**
-   * 効果音をキャッシュ
-   *
-   * @returns {void}
-   */
-  cacheSounds() {
-    for (const [key, soundPath] of Object.entries(
-      GAME_SETTINGS.SOUND_EFFECTS
-    )) {
-      const audio = new Audio(soundPath);
-      this.soundEffects[key] = audio; // 音声をキャッシュ
-    }
-  }
-
-  /**
-   * 効果音を再生
-   *
-   * @param {string} soundKey - 効果音のキー
-   * @returns {void}
-   */
-  async playSoundEffect(soundKey) {
-    const sound = this.soundEffects[soundKey];
-    if (sound) {
-      // 音声の再生が終わるまで待つための Promise を返す
-      return new Promise((resolve, reject) => {
-        sound.play().catch((error) => {
-          console.error("効果音の再生に失敗しました: ", error);
-          reject(error);
-        });
-
-        // 再生終了後に resolve を呼び出して次の音声を再生する
-        sound.onended = () => resolve();
-      });
-    } else {
-      console.warn(`指定された音声 "${soundKey}" がキャッシュされていません`);
     }
   }
 
