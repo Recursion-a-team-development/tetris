@@ -1,3 +1,5 @@
+
+import { renderTopPage } from "../pages/top";
 import { GAME_SETTINGS } from "./gameSetting.js";
 import { Tetromino } from "./tetromino.js";
 import { Score } from "./score.js";
@@ -52,6 +54,9 @@ export class TetrisGame {
       this.controlTetromino(event)
     );
 
+    // ゲームオーバー処理が何度も呼ばれないようにフラグを追加
+    this.gameOverFlag = false;
+
     // startTimeをnullで初期化
     this.startTime = null;
   }
@@ -75,6 +80,12 @@ export class TetrisGame {
    * @returns {void}
    */
   gameLoop(timestamp) {
+    // ゲームオーバー判定
+    if (this.isGameOver()) {
+      this.gameOver(); // ゲームオーバー処理
+      return; // ゲームオーバー後はループを中断
+    }
+
     if (timestamp - this.lastFallTime >= this.fallInterval) {
       this.lastFallTime = timestamp;
       this.moveTetrominoDown();
@@ -97,7 +108,7 @@ export class TetrisGame {
     );
     this.updateGhostTetromino();
     this.drawNextTetromino();
-    requestAnimationFrame(this.gameLoop.bind(this)); // コンテキストを維持
+    this.animationFrameId = requestAnimationFrame(this.gameLoop.bind(this)); // コンテキストを維持
   }
 
   /**
@@ -378,6 +389,68 @@ export class TetrisGame {
 
       // startTimeを現在の時間にして経過時間を現在の時刻からにする
       this.startTime = Date.now();
+    }
+  }
+
+  /**
+   * ゲームオーバー判定
+   *
+   * @returns {boolean} - ゲームオーバーの場合は`true`、そうでないなら`false`
+   */
+  isGameOver() {
+    // ゲームオーバーフラグが立っている場合、すでにゲームオーバー処理が行われたので、false
+    if (this.gameOverFlag) {
+      return false;
+    }
+
+    // 新しいテトリスブロックがボードの最上部に配置されているとき
+    // すでに固定されたブロックと重なっている場合はゲームオーバー
+    for (let row = 0; row < this.currentTetromino.shape.length; row++) {
+      for (let col = 0; col < this.currentTetromino.shape[row].length; col++) {
+        if (this.currentTetromino.shape[row][col]) {
+          const x = this.xPosition + col;
+          const y = this.yPosition + row;
+
+          // ボード内で重なる位置にすでにブロックがある場合はゲームオーバー
+          if (y < 0 || (this.board[y] && this.board[y][x])) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * ゲームオーバー処理
+   *
+   * @returns {void}
+   */
+  gameOver() {
+    // すでにゲームオーバーなら何もしない
+    if (this.gameOverFlag) {
+      return;
+    }
+
+    this.gameOverFlag = true; // ゲームオーバーフラグを立てる
+
+    // ゲームループを停止
+    cancelAnimationFrame(this.animationFrameId);
+
+    // スコアを表示して再プレイするか選択してもらう
+    const isConfirmed = confirm(
+      `Your Score: ${this.score}\n再プレイしますか？`
+    );
+
+    // 再プレイしなければトップページへ、再プレイならスコアウィンドウをクリアしてリスタート
+    if (!isConfirmed) {
+      renderTopPage();
+    } else {
+      const newGame = new TetrisGame("tetris-board", "score-window");
+      newGame.scoreWindow.innerHTML = `
+        <h2>${newGame.score}</h2>
+      `;
+      newGame.startGame();
     }
   }
 }
